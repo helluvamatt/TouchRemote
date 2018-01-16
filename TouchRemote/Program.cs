@@ -1,5 +1,6 @@
 ﻿using log4net.Appender;
 using log4net.Config;
+using log4net.Layout;
 using System;
 using System.IO;
 using System.Reflection;
@@ -37,8 +38,22 @@ namespace TouchRemote
 
                 // Configure logging
                 Directory.CreateDirectory(logPath);
-                var layout = new log4net.Layout.SimpleLayout();
-                var logFileAppender = new RollingFileAppender { File = Path.Combine(logPath, "TouchRemote.log"), Layout = layout };
+                var layout = new PatternLayout()
+                {
+                    ConversionPattern = "%d [%-5p] [%c] %message%n%exception"
+                };
+                layout.ActivateOptions();
+                var logFileAppender = new RollingFileAppender
+                {
+                    File = Path.Combine(logPath, "TouchRemote.log"),
+                    RollingStyle = RollingFileAppender.RollingMode.Size,
+                    MaxFileSize = 1048576,
+                    MaxSizeRollBackups = 10,
+                    StaticLogFileName = true,
+                    Layout = layout,
+                    ImmediateFlush = true,
+                };
+                logFileAppender.ActivateOptions();
                 BasicConfigurator.Configure(logFileAppender);
 
                 // Create the AppContext - the controller of the entire application
