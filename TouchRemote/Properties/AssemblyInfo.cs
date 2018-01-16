@@ -5,12 +5,12 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("TouchRemote")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyTitle("Touch Remote")]
+[assembly: AssemblyDescription("Touch Remote core application")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("TouchRemote")]
-[assembly: AssemblyCopyright("Copyright ©  2018")]
+[assembly: AssemblyCompany("SCHNEENET")]
+[assembly: AssemblyProduct("Touch Remote")]
+[assembly: AssemblyCopyright("Copyright © Matt Schneeberger 2018")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

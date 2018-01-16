@@ -1,0 +1,122 @@
+﻿<mac:MetroWindow x:Class="TouchRemote.UI.ToggleButtonProperties"
+                 xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                 xmlns:fa="http://schemas.fontawesome.io/icons/"
+                 xmlns:mac="http://metro.mahapps.com/winfx/xaml/controls"
+                 xmlns:local="clr-namespace:TouchRemote"
+                 xmlns:model="clr-namespace:TouchRemote.Model"
+                 xmlns:uc="clr-namespace:TouchRemote.Utils.Converters"
+                 mc:Ignorable="d"
+                 DataContext="{Binding RelativeSource={RelativeSource Self}}"
+                 Title="Toggle Button Properties"
+                 MinHeight="300" Height="300" MinWidth="400" Width="300"
+                 ShowInTaskbar="False"
+                 ShowMinButton="False"
+                 ShowMaxRestoreButton="False"
+                 ResizeMode="CanResizeWithGrip"
+                 BorderBrush="{DynamicResource AccentColorBrush}"
+                 BorderThickness="1">
+    <mac:MetroWindow.Resources>
+        <Style TargetType="Label">
+            <Setter Property="FontWeight" Value="Bold" />
+        </Style>
+        <uc:EnumerableNullReplaceConverter x:Key="enumerableNullReplaceConverter" />
+        <uc:NullReplaceConverter x:Key="nullReplaceConverter" />
+        <uc:ConfigHasPropertiesToVisibilityConverter x:Key="configHasPropertiesToVisibilityConverter" />
+    </mac:MetroWindow.Resources>
+    <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+        <StackPanel Orientation="Vertical">
+            <GroupBox Header="Appearance">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="150" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="auto" />
+                        <RowDefinition Height="auto" />
+                        <RowDefinition Height="auto" />
+                        <RowDefinition Height="auto" />
+                    </Grid.RowDefinitions>
+                    <Label Grid.Column="0" Grid.Row="0">Icon Off</Label>
+                    <Label Grid.Column="0" Grid.Row="1">Icon On</Label>
+                    <Label Grid.Column="0" Grid.Row="2">Label Off</Label>
+                    <Label Grid.Column="0" Grid.Row="3">Label On</Label>
+                    <ComboBox Grid.Column="1" Grid.Row="0" Margin="4" ItemsSource="{Binding Icons}" SelectedItem="{Binding Button.IconOff}">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Width="20" FontSize="18px"><fa:FontAwesome Icon="{Binding}" /></TextBlock>
+                                    <TextBlock Margin="4,0,0,0" Text="{Binding}" />
+                                </StackPanel>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+                    <ComboBox Grid.Column="1" Grid.Row="1" Margin="4" ItemsSource="{Binding Icons}" SelectedItem="{Binding Button.IconOn}">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Width="20" FontSize="18px"><fa:FontAwesome Icon="{Binding}" /></TextBlock>
+                                    <TextBlock Margin="4,0,0,0" Text="{Binding}" />
+                                </StackPanel>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+                    <TextBox Grid.Column="1" Grid.Row="2" Margin="4" Text="{Binding Button.LabelOff}" />
+                    <TextBox Grid.Column="1" Grid.Row="3" Margin="4" Text="{Binding Button.LabelOn}" />
+                </Grid>
+            </GroupBox>
+            <GroupBox Header="Behavior">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="150" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="auto" />
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="auto" />
+                        <RowDefinition Height="auto" />
+                    </Grid.RowDefinitions>
+                    <Label Grid.Column="0" Grid.Row="0">Toggle Off Action</Label>
+                    <Label Grid.Column="0" Grid.Row="1">Toggle On Action</Label>
+                    <ComboBox Grid.Column="1" Grid.Row="0" Margin="4" ItemsSource="{Binding PluginManager.Actions, Converter={StaticResource enumerableNullReplaceConverter}, ConverterParameter='__NONE__'}" SelectedItem="{Binding Button.ToggleOffAction, Converter={StaticResource nullReplaceConverter}, ConverterParameter='__NONE__'}">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate DataType="{x:Type model:IActionExecutableDescriptor}">
+                                <TextBlock>
+                                    <TextBlock.Text>
+                                        <MultiBinding StringFormat="{}{0} ({1})" FallbackValue="(None)">
+                                            <Binding Path="Name" />
+                                            <Binding Path="Plugin.Name" />
+                                        </MultiBinding>
+                                    </TextBlock.Text>
+                                </TextBlock>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+                    <TextBlock Grid.Column="2" Grid.Row="0" Margin="4" VerticalAlignment="Center" Visibility="{Binding Button.ToggleOnActionImpl, Converter={StaticResource configHasPropertiesToVisibilityConverter}}">
+                        <Hyperlink Command="{Binding ToggleOnConfigCommand}">Config</Hyperlink>
+                    </TextBlock>
+                    <ComboBox Grid.Column="1" Grid.Row="1" Margin="4" ItemsSource="{Binding PluginManager.Actions, Converter={StaticResource enumerableNullReplaceConverter}, ConverterParameter='__NONE__'}" SelectedItem="{Binding Button.ToggleOnAction, Converter={StaticResource nullReplaceConverter}, ConverterParameter='__NONE__'}">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate DataType="{x:Type model:IActionExecutableDescriptor}">
+                                <TextBlock>
+                                    <TextBlock.Text>
+                                        <MultiBinding StringFormat="{}{0} ({1})" FallbackValue="(None)">
+                                            <Binding Path="Name" />
+                                            <Binding Path="Plugin.Name" />
+                                        </MultiBinding>
+                                    </TextBlock.Text>
+                                </TextBlock>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+                    <TextBlock Grid.Column="2" Grid.Row="1" Margin="4" VerticalAlignment="Center" Visibility="{Binding Button.ToggleOnActionImpl, Converter={StaticResource configHasPropertiesToVisibilityConverter}}">
+                        <Hyperlink Command="{Binding ToggleOffConfigCommand}">Config</Hyperlink>
+                    </TextBlock>
+                </Grid>
+            </GroupBox>
+        </StackPanel>
+    </ScrollViewer>
+</mac:MetroWindow>

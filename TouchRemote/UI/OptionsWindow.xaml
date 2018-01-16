@@ -1,0 +1,367 @@
+﻿<mac:MetroWindow x:Class="TouchRemote.UI.OptionsWindow"
+                 xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                 xmlns:is="http://schemas.microsoft.com/expression/2010/interactions"
+                 xmlns:fa="http://schemas.fontawesome.io/icons/"
+                 xmlns:dd="urn:gong-wpf-dragdrop"
+                 xmlns:mac="http://metro.mahapps.com/winfx/xaml/controls"
+                 xmlns:local="clr-namespace:TouchRemote"
+                 xmlns:vm="clr-namespace:TouchRemote.ViewModels"
+                 xmlns:p="clr-namespace:TouchRemote.Properties"
+                 xmlns:uc="clr-namespace:TouchRemote.Utils.Converters"
+                 xmlns:vr="clr-namespace:TouchRemote.Utils.ValidationRules"
+                 mc:Ignorable="d"
+                 x:ClassModifier="internal"
+                 Title="Touch Remote" Width="800" Height="600" MinWidth="400" MinHeight="300"
+                 SnapsToDevicePixels="True"
+                 DataContext="{Binding RelativeSource={RelativeSource Self}}"
+                 ResizeMode="CanResizeWithGrip"
+                 BorderBrush="{DynamicResource AccentColorBrush}"
+                 BorderThickness="1">
+    <mac:MetroWindow.Resources>
+        <DataTemplate x:Key="tabItemTemplate">
+            <Grid x:Name="Root" HorizontalAlignment="Left">
+                <StackPanel x:Name="ContentPanel" Orientation="Horizontal">
+                    <TextBlock VerticalAlignment="Center" Margin="0 0 6 0" FontSize="26px" Width="32"><fa:FontAwesome Icon="{Binding RelativeSource={RelativeSource AncestorType=TabItem}, Path=Icon}" /></TextBlock>
+                    <TextBlock VerticalAlignment="Center" TextAlignment="Left" Text="{TemplateBinding Content}" />
+                </StackPanel>
+            </Grid>
+        </DataTemplate>
+        <uc:StringIsNullOrEmptyConverter x:Key="stringIsNullOrEmptyConverter" />
+        <uc:EnumBooleanConverter x:Key="enumBooleanConverter" />
+        <uc:TypeStringConverter x:Key="typeStringConverter" />
+        <uc:IsNullToVisibilityConverter x:Key="isNullToVisibilityConverter" />
+    </mac:MetroWindow.Resources>
+    <mac:MetroWindow.RightWindowCommands>
+        <mac:WindowCommands>
+            <Button Content="shutdown" Command="{Binding ShutdownCommand}" />
+        </mac:WindowCommands>
+    </mac:MetroWindow.RightWindowCommands>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="auto" />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="auto" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+        <fa:ImageAwesome Grid.Row="1" Grid.Column="0">
+            <fa:ImageAwesome.Style>
+                <Style TargetType="fa:ImageAwesome">
+                    <Setter Property="Width" Value="24" />
+                    <Setter Property="Height" Value="24" />
+                    <Setter Property="Margin" Value="4" />
+                    <Setter Property="Icon" Value="ExclamationTriangle" />
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding WebServer.Status}" Value="Ready">
+                            <Setter Property="Icon" Value="Signal" />
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </fa:ImageAwesome.Style>
+        </fa:ImageAwesome>
+        <TextBlock Grid.Row="1" Grid.Column="1" VerticalAlignment="Center">
+            <TextBlock.Style>
+                <Style TargetType="TextBlock">
+                    <Setter Property="Visibility" Value="Collapsed" />
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding WebServer.Status}" Value="Ready">
+                            <Setter Property="Visibility" Value="Visible" />
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </TextBlock.Style>
+            <Span>To use the remote, navigate to: </Span>
+            <Hyperlink Command="{Binding OpenUriCommand}" CommandParameter="{Binding WebServer.ListenAddresses[0]}">
+                <Run Text="{Binding WebServer.ListenAddresses[0]}" />
+            </Hyperlink>
+        </TextBlock>
+        <TabControl Grid.Row="0" Grid.ColumnSpan="3" TabStripPlacement="Left">
+            <TabItem vm:IconTabItem.Icon="Tachometer"  Header="Status" HeaderTemplate="{StaticResource tabItemTemplate}">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="auto" />
+                        <RowDefinition Height="auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <Grid Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="2">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        <fa:ImageAwesome Grid.Row="0" Grid.Column="0" Grid.RowSpan="2" Margin="8" Width="84" Height="84">
+                            <fa:ImageAwesome.Style>
+                                <Style TargetType="fa:ImageAwesome">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding WebServer.Status}" Value="Stopped">
+                                            <Setter Property="Icon" Value="ExclamationTriangle" />
+                                            <Setter Property="Spin" Value="False" />
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding WebServer.Status}" Value="Starting">
+                                            <Setter Property="Icon" Value="Refresh" />
+                                            <Setter Property="Spin" Value="True" />
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding WebServer.Status}" Value="Ready">
+                                            <Setter Property="Icon" Value="Signal" />
+                                            <Setter Property="Spin" Value="False" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </fa:ImageAwesome.Style>
+                        </fa:ImageAwesome>
+                        <TextBlock Grid.Row="0" Grid.Column="1" FontSize="{DynamicResource HeaderFontSize}" Text="{Binding WebServer.Status}" />
+                        <TextBlock Grid.Row="1" Grid.Column="1" Visibility="{Binding WebServer.Error, Converter={StaticResource isNullToVisibilityConverter}}" Foreground="Red" Text="{Binding WebServer.Error.Message}" />
+                    </Grid>
+                    <TextBlock Grid.Row="1" Grid.Column="0" FontSize="{DynamicResource SubHeaderFontSize}">Connections</TextBlock>
+                    <TextBlock Grid.Row="1" Grid.Column="1" FontSize="{DynamicResource SubHeaderFontSize}">Listen Addresses</TextBlock>
+                    <ItemsControl Grid.Row="2" Grid.Column="0" ItemsSource="{Binding Path=WebServer.Clients}" FocusVisualStyle="{x:Null}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Orientation="Vertical" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock>
+                                    <fa:FontAwesome Icon="Mobile" />
+                                    <Run>
+                                        <Run.Text>
+                                            <MultiBinding StringFormat="{}{0}:{1}">
+                                                <Binding Path="RemoteEndpoint.Address" />
+                                                <Binding Path="RemoteEndpoint.Port" />
+                                            </MultiBinding>
+                                        </Run.Text>
+                                    </Run>
+                                </TextBlock>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                        <ItemsControl.Style>
+                            <Style TargetType="ItemsControl">
+                                <Style.Triggers>
+                                    <Trigger Property="HasItems" Value="false">
+                                        <Setter Property="Template">
+                                            <Setter.Value>
+                                                <ControlTemplate>
+                                                    <TextBlock Foreground="Red">
+                                                        <fa:FontAwesome Icon="ExclamationTriangle" />
+                                                        <Span>No clients connected.</Span>
+                                                    </TextBlock>
+                                                </ControlTemplate>
+                                            </Setter.Value>
+                                        </Setter>
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </ItemsControl.Style>
+                    </ItemsControl>
+                    <ItemsControl Grid.Row="2" Grid.Column="1" ItemsSource="{Binding Path=WebServer.ListenAddresses}" FocusVisualStyle="{x:Null}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Orientation="Vertical" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock><Hyperlink Command="{Binding DataContext.OpenUriCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}" CommandParameter="{Binding Mode=OneWay}"><Run Text="{Binding Mode=OneWay}" /></Hyperlink></TextBlock>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </Grid>
+            </TabItem>
+            <TabItem vm:IconTabItem.Icon="Th" Header="Layout" HeaderTemplate="{StaticResource tabItemTemplate}">
+                <ListView Grid.Row="1" ItemsSource="{Binding RemoteControlService.Buttons}" dd:DragDrop.IsDragSource="True" dd:DragDrop.IsDropTarget="True" VerticalContentAlignment="Top">
+                    <ListView.Resources>
+                        <ContextMenu x:Key="itemContextMenu">
+                            <ContextMenu.Resources>
+                                <Style TargetType="fa:ImageAwesome">
+                                    <Setter Property="Width" Value="20" />
+                                    <Setter Property="Height" Value="20" />
+                                </Style>
+                            </ContextMenu.Resources>
+                            <MenuItem Command="{Binding PlacementTarget.Tag.OpenPropertiesCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" CommandParameter="{Binding}" Header="Properties">
+                                <MenuItem.Icon>
+                                    <fa:ImageAwesome Icon="Wrench" />
+                                </MenuItem.Icon>
+                            </MenuItem>
+                            <Separator />
+                            <MenuItem Command="{Binding PlacementTarget.Tag.RemoveButtonCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" CommandParameter="{Binding}" Header="Delete">
+                                <MenuItem.Icon>
+                                    <fa:ImageAwesome Icon="TrashOutline" />
+                                </MenuItem.Icon>
+                            </MenuItem>
+                        </ContextMenu>
+                    </ListView.Resources>
+                    <ListView.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <WrapPanel Orientation="Horizontal" ScrollViewer.VerticalScrollBarVisibility="Auto" />
+                        </ItemsPanelTemplate>
+                    </ListView.ItemsPanel>
+                    <ListView.ItemTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Vertical" VerticalAlignment="Top" MinHeight="56" Width="64" Background="Transparent" Tag="{Binding DataContext, RelativeSource={RelativeSource AncestorType=ListView}}" ContextMenu="{StaticResource itemContextMenu}">
+                                <Grid Margin="6">
+                                    <TextBlock HorizontalAlignment="Center" FontSize="22px">
+                                        <fa:FontAwesome Icon="{Binding Icon}" />
+                                    </TextBlock>
+                                    <TextBlock HorizontalAlignment="Right" VerticalAlignment="Bottom" FontSize="10px">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Visibility" Value="Collapsed" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding Converter={StaticResource typeStringConverter}}" Value="ToggleButton">
+                                                        <Setter Property="Visibility" Value="Visible" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                        <fa:FontAwesome>
+                                            <fa:FontAwesome.Style>
+                                                <Style TargetType="fa:FontAwesome">
+                                                    <Setter Property="Icon" Value="ToggleOff" />
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding Toggled}" Value="True">
+                                                            <Setter Property="Icon" Value="ToggleOn" />
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </fa:FontAwesome.Style>
+                                        </fa:FontAwesome>
+                                    </TextBlock>
+                                </Grid>
+                                <TextBlock HorizontalAlignment="Stretch" TextAlignment="Center" TextWrapping="WrapWithOverflow" Text="{Binding Label}" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                    <ListView.ContextMenu>
+                        <ContextMenu>
+                            <ContextMenu.Resources>
+                                <Style TargetType="fa:ImageAwesome">
+                                    <Setter Property="Width" Value="20" />
+                                    <Setter Property="Height" Value="20" />
+                                </Style>
+                            </ContextMenu.Resources>
+                            <MenuItem Command="{Binding AddButtonCommand}" Header="Add button...">
+                                <MenuItem.Icon>
+                                    <fa:ImageAwesome Icon="PlusSquareOutline" />
+                                </MenuItem.Icon>
+                            </MenuItem>
+                            <MenuItem Command="{Binding AddToggleButtonCommand}" Header="Add toggle button...">
+                                <MenuItem.Icon>
+                                    <fa:ImageAwesome Icon="ToggleOn" />
+                                </MenuItem.Icon>
+                            </MenuItem>
+                        </ContextMenu>
+                    </ListView.ContextMenu>
+                </ListView>
+            </TabItem>
+            <TabItem vm:IconTabItem.Icon="Plug" Header="Plugins" HeaderTemplate="{StaticResource tabItemTemplate}">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition>
+                            <ColumnDefinition.Style>
+                                <Style TargetType="ColumnDefinition">
+                                    <Setter Property="Width" Value="*" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding SelectedPlugin}" Value="{x:Null}">
+                                            <Setter Property="Width" Value="0" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </ColumnDefinition.Style>
+                        </ColumnDefinition>
+                    </Grid.ColumnDefinitions>
+                    <ListBox Grid.Column="0" Grid.RowSpan="5" SelectedItem="{Binding SelectedPlugin}" ItemsSource="{Binding PluginManager.Plugins}">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock VerticalAlignment="Center" FontSize="20px"><fa:FontAwesome Icon="Cubes" /></TextBlock>
+                                    <TextBlock VerticalAlignment="Center" Margin="4,0,0,0" Text="{Binding Name}" />
+                                </StackPanel>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                    <Grid Grid.Column="1">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="1*" />
+                            <ColumnDefinition Width="2*" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="auto" />
+                            <RowDefinition Height="auto" />
+                            <RowDefinition Height="auto" />
+                            <RowDefinition Height="auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+
+                        <fa:ImageAwesome Icon="Cubes" Width="64" Height="64" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" />
+
+                        <Label Grid.Row="1" Grid.Column="0" FontWeight="Bold" HorizontalAlignment="Right">Plugin Name</Label>
+                        <Label Grid.Row="2" Grid.Column="0" FontWeight="Bold" HorizontalAlignment="Right">Description</Label>
+                        <Label Grid.Row="3" Grid.Column="0" FontWeight="Bold" HorizontalAlignment="Right">Version</Label>
+
+                        <Label Grid.Row="1" Grid.Column="1" Content="{Binding SelectedPlugin.Name}" />
+                        <Label Grid.Row="2" Grid.Column="1" Content="{Binding SelectedPlugin.Description}" />
+                        <Label Grid.Row="3" Grid.Column="1" Content="{Binding SelectedPlugin.Version}" />
+                    </Grid>
+                </Grid>
+            </TabItem>
+            <TabItem vm:IconTabItem.Icon="Cog" Header="Settings" HeaderTemplate="{StaticResource tabItemTemplate}">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                    <StackPanel Orientation="Vertical">
+                        <GroupBox Header="Server" Padding="6">
+                            <StackPanel Orientation="Vertical">
+                                <Label Foreground="Red">
+                                    <TextBlock>
+                                <Span FontWeight="Bold">Note:</Span>
+                                <Span>Changing the listen interfaces and port will require a restart of Touch Remote.</Span>
+                                    </TextBlock>
+                                </Label>
+                                <Label FontWeight="Bold">Interface:</Label>
+                                <RadioButton IsChecked="{Binding Source={x:Static p:Settings.Default}, Path=ListenAddressesMode, Converter={StaticResource enumBooleanConverter}, ConverterParameter=LOCAL_ONLY}" GroupName="ListenInterfaceMode" Margin="0,6,0,0" Content="Localhost (most secure, only useful for testing)" />
+                                <RadioButton IsChecked="{Binding Source={x:Static p:Settings.Default}, Path=ListenAddressesMode, Converter={StaticResource enumBooleanConverter}, ConverterParameter=CUSTOM}" GroupName="ListenInterfaceMode" Margin="0,6,0,0" Content="Selected Interfaces:" />
+                                <ListBox ItemsSource="{Binding Interfaces}" IsEnabled="{Binding Source={x:Static p:Settings.Default}, Path=ListenAddressesMode, Converter={StaticResource enumBooleanConverter}, ConverterParameter=CUSTOM}" Margin="16,4,0,0" Height="100">
+                                    <ListBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <ListBoxItem IsSelected="{Binding Checked}">
+                                                <CheckBox IsChecked="{Binding Checked}" Content="{Binding Path=Label}" />
+                                            </ListBoxItem>
+                                        </DataTemplate>
+                                    </ListBox.ItemTemplate>
+                                </ListBox>
+                                <RadioButton IsChecked="{Binding Source={x:Static p:Settings.Default}, Path=ListenAddressesMode, Converter={StaticResource enumBooleanConverter}, ConverterParameter=ANY}" GroupName="ListenInterfaceMode" Margin="0,6,0,0" Content="All Interfaces" />
+                                <Label FontWeight="Bold">Port:</Label>
+                                <TextBox>
+                                    <TextBox.Text>
+                                        <Binding Source="{x:Static p:Settings.Default}" Path="ListenPort">
+                                            <Binding.ValidationRules>
+                                                <vr:IntegerValueValidationRule ErrorMessage="Please enter a valid port number..." />
+                                            </Binding.ValidationRules>
+                                        </Binding>
+                                    </TextBox.Text>
+                                </TextBox>
+                            </StackPanel>
+                        </GroupBox>
+                        <GroupBox Header="Authentication" Padding="6">
+                            <StackPanel Orientation="Vertical">
+                                <CheckBox Content="Require Password" IsChecked="{Binding PasswordRequired}" />
+                                <TextBox Margin="0,6,0,0" Text="{Binding Source={x:Static p:Settings.Default}, Path=RequiredPassword}" IsEnabled="{Binding PasswordRequired}" />
+                            </StackPanel>
+                        </GroupBox>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+        </TabControl>
+    </Grid>
+</mac:MetroWindow>

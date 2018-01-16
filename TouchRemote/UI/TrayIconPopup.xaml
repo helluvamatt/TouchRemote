@@ -1,0 +1,74 @@
+﻿<UserControl x:Class="TouchRemote.UI.TrayIconPopup"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:fa="http://schemas.fontawesome.io/icons/"
+             xmlns:local="clr-namespace:TouchRemote"
+             x:ClassModifier="internal"
+             mc:Ignorable="d" 
+             Height="100" Width="300" 
+             DataContext="{Binding RelativeSource={RelativeSource Self}}"
+             MouseEnter="UserControl_MouseEnter"
+             MouseLeave="UserControl_MouseLeave">
+    <Border Background="#222222">
+        <Border.Style>
+            <Style TargetType="Border">
+                <Style.Triggers>
+                    <DataTrigger Binding="{Binding Hovered}" Value="True">
+                        <Setter Property="Opacity" Value="1" />
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding Hovered}" Value="False">
+                        <Setter Property="Opacity" Value="0.7" />
+                    </DataTrigger>
+                </Style.Triggers>
+            </Style>
+        </Border.Style>
+        <Grid Opacity="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*" />
+                <RowDefinition Height="auto" />
+            </Grid.RowDefinitions>
+            <fa:ImageAwesome Grid.Column="0" Grid.Row="0" Grid.RowSpan="2" Margin="8" Width="84" Height="84">
+                <fa:ImageAwesome.Style>
+                    <Style TargetType="fa:ImageAwesome">
+                        <Setter Property="Foreground" Value="White" />
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding WebServer.Status}" Value="Stopped">
+                                <Setter Property="Icon" Value="ExclamationTriangle" />
+                                <Setter Property="Spin" Value="False" />
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding WebServer.Status}" Value="Starting">
+                                <Setter Property="Icon" Value="Refresh" />
+                                <Setter Property="Spin" Value="True" />
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding WebServer.Status}" Value="Ready">
+                                <Setter Property="Icon" Value="Signal" />
+                                <Setter Property="Spin" Value="False" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </fa:ImageAwesome.Style>
+            </fa:ImageAwesome>
+            <StackPanel Orientation="Vertical" Grid.Column="1" Grid.Row="0" Margin="8">
+                <TextBlock HorizontalAlignment="Stretch" Foreground="White" FontSize="16pt">Touch Remote</TextBlock>
+                <TextBlock HorizontalAlignment="Stretch" Foreground="White" FontSize="12pt" Text="{Binding WebServer.Status}" />
+            </StackPanel>
+            <Button Grid.Column="1" Grid.Row="0" BorderThickness="0" Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}" Padding="4" Foreground="White" HorizontalAlignment="Right" VerticalAlignment="Top" Command="{Binding CloseStatusPopupCommand}">
+                <fa:FontAwesome Icon="Close" />
+            </Button>
+            <TextBlock Grid.Column="1" Grid.Row="1" HorizontalAlignment="Right" Padding="0 8 8 8" VerticalAlignment="Bottom" FontSize="10pt">
+                <TextBlock Margin="8 0 0 0">
+                    <Hyperlink Command="{Binding OptionsFormCommand}" Foreground="White">Options</Hyperlink>
+                </TextBlock>
+                <TextBlock Margin="8 0 0 0">
+                    <Hyperlink Command="{Binding ShutdownCommand}" Foreground="White">Shutdown</Hyperlink>
+                </TextBlock>
+            </TextBlock>
+        </Grid>
+    </Border>
+</UserControl>
