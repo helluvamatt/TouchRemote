@@ -13,33 +13,35 @@
     <xs:attribute name="Type" type="xs:string" />
   </xs:complexType>
   
-  <xs:complexType name="ButtonBase">
-    <xs:attribute name="Id" type="xs:string" />
+  <xs:complexType name="Element">
+    <xs:attribute name="Id" type="xs:string" use="required" />
+    <xs:attribute name="X" type="xs:double" use="required" />
+    <xs:attribute name="Y" type="xs:double" use="required" />
   </xs:complexType>
   
   <xs:complexType name="Button">
     <xs:complexContent>
-      <xs:extension base="ButtonBase">
+      <xs:extension base="Element">
         <xs:all minOccurs="0">
           <xs:element name="Button.ClickAction" type="ActionExecutable" />
         </xs:all>
-        <xs:attribute name="Label" type="xs:string" />
-        <xs:attribute name="Icon" type="xs:string" />
+        <xs:attribute name="Label" type="xs:string" use="required" />
+        <xs:attribute name="Icon" type="xs:string" use="required" />
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>
 
   <xs:complexType name="ToggleButton">
     <xs:complexContent>
-      <xs:extension base="ButtonBase">
+      <xs:extension base="Element">
         <xs:all minOccurs="0">
           <xs:element name="ToggleButton.ToggleOnAction" type="ActionExecutable" />
           <xs:element name="ToggleButton.ToggleOffAction" type="ActionExecutable" />
         </xs:all>
-        <xs:attribute name="LabelOn" type="xs:string" />
-        <xs:attribute name="IconOn" type="xs:string" />
-        <xs:attribute name="LabelOff" type="xs:string" />
-        <xs:attribute name="IconOff" type="xs:string" />
+        <xs:attribute name="LabelOn" type="xs:string" use="required" />
+        <xs:attribute name="IconOn" type="xs:string" use="required" />
+        <xs:attribute name="LabelOff" type="xs:string" use="required" />
+        <xs:attribute name="IconOff" type="xs:string" use="required" />
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>

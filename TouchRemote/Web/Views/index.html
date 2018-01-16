@@ -30,23 +30,28 @@
             </div>
         </div>
     </div>
-    <script type="text/x-template" id="tpl_buttons">
+    <script type="text/x-template" id="tpl_controls">
         <div>
             <div class="row" v-if="!loaded">
                 <div class="col-xs-12 col-sm-8 col-sm-offset-2 col-md-6 col-md-offset-3 col-lg-4 col-lg-offset-4">
                     <div class="alert alert-info"><i class="fa fa-spin fa-refresh"></i>&nbsp;Loading...</div>
                 </div>
             </div>
-            <div class="buttons" v-else-if="buttonsDisplay.length">
-                <button v-for="btn in buttonsDisplay" type="button" class="btn btn-default button" v-on:click="sendClick(btn.Id)">
-                    <div><i v-bind:class="'fa fa-3x fa-' + btn.IconClass"></i></div>
-                    <div>{{ btn.Label }}</div>
-                </button>
+            <div class="controls" v-else-if="controlsDisplay.length">
+                <template v-for="control in controlsDisplay" >
+                    <component v-bind:is="control.Type" v-bind="control" v-on:clicked="sendClick(control.Id)"></component>
+                </template>
             </div>
             <div class="col-xs-12 col-sm-8 col-sm-offset-2 col-md-6 col-md-offset-3 col-lg-4 col-lg-offset-4" v-else>
-                <div class="alert alert-warning">No buttons configured.</div>
+                <div class="alert alert-warning">No controls configured.</div>
             </div>
         </div>
+    </script>
+    <script type="text/x-template" id="tpl_button">
+        <button type="button" class="btn btn-default control" v-bind:style="{top: Y + 'px', left: X + 'px'}" v-on:click="emitClicked">
+            <div><i v-bind:class="'fa fa-3x fa-' + Properties.IconClass"></i></div>
+            <div class="lbl">{{ Properties.Label }}</div>
+        </button>
     </script>
     <script type="text/x-template" id="tpl_login">
         <div class="col-xs-12 col-sm-8 col-sm-offset-2 col-md-6 col-md-offset-3 col-lg-4 col-lg-offset-4" style="text-align: center;">

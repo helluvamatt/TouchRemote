@@ -24,12 +24,12 @@ namespace TouchRemote.Model.Persistence {
     [System.Xml.Serialization.XmlRootAttribute(Namespace="http://schneenet.com/Buttons.xsd", IsNullable=false)]
     public partial class Buttons {
         
-        private ButtonBase[] itemsField;
+        private Element[] itemsField;
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute("Button", typeof(Button))]
         [System.Xml.Serialization.XmlElementAttribute("ToggleButton", typeof(ToggleButton))]
-        public ButtonBase[] Items {
+        public Element[] Items {
             get {
                 return this.itemsField;
             }
@@ -45,7 +45,7 @@ namespace TouchRemote.Model.Persistence {
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
     [System.Xml.Serialization.XmlTypeAttribute(Namespace="http://schneenet.com/Buttons.xsd")]
-    public partial class Button : ButtonBase {
+    public partial class Button : Element {
         
         private ActionExecutable buttonClickActionField;
         
@@ -130,9 +130,13 @@ namespace TouchRemote.Model.Persistence {
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
     [System.Xml.Serialization.XmlTypeAttribute(Namespace="http://schneenet.com/Buttons.xsd")]
-    public partial class ButtonBase {
+    public partial class Element {
         
         private string idField;
+        
+        private double xField;
+        
+        private double yField;
         
         /// <remarks/>
         [System.Xml.Serialization.XmlAttributeAttribute()]
@@ -144,6 +148,28 @@ namespace TouchRemote.Model.Persistence {
                 this.idField = value;
             }
         }
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlAttributeAttribute()]
+        public double X {
+            get {
+                return this.xField;
+            }
+            set {
+                this.xField = value;
+            }
+        }
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlAttributeAttribute()]
+        public double Y {
+            get {
+                return this.yField;
+            }
+            set {
+                this.yField = value;
+            }
+        }
     }
     
     /// <remarks/>
@@ -152,7 +178,7 @@ namespace TouchRemote.Model.Persistence {
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
     [System.Xml.Serialization.XmlTypeAttribute(Namespace="http://schneenet.com/Buttons.xsd")]
-    public partial class ToggleButton : ButtonBase {
+    public partial class ToggleButton : Element {
         
         private ActionExecutable toggleButtonToggleOnActionField;
         

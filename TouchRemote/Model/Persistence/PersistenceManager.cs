@@ -33,18 +33,20 @@ namespace TouchRemote.Model.Persistence
             }
         }
 
-        public void Save(IEnumerable<Model.Button> buttons)
+        public void Save(IEnumerable<Model.Element> elements)
         {
             XmlDocument document = new XmlDocument();
             document.Schemas.Add(_Schema);
-            List<ButtonBase> persistenceButtons = new List<ButtonBase>();
-            foreach (var btn in buttons)
+            List<Element> persistenceButtons = new List<Element>();
+            foreach (var e in elements)
             {
-                if (btn is Model.ToggleButton)
+                if (e is Model.ToggleButton)
                 {
-                    var toggleBtn = btn as Model.ToggleButton;
+                    var toggleBtn = e as Model.ToggleButton;
                     ToggleButton persistenceBtn = new ToggleButton();
                     persistenceBtn.Id = toggleBtn.Id.ToString();
+                    persistenceBtn.X = toggleBtn.X;
+                    persistenceBtn.Y = toggleBtn.Y;
                     persistenceBtn.LabelOn = toggleBtn.LabelOn;
                     persistenceBtn.LabelOff = toggleBtn.LabelOff;
                     persistenceBtn.IconOn = toggleBtn.IconOn.ToString();
@@ -66,10 +68,13 @@ namespace TouchRemote.Model.Persistence
                     persistenceButtons.Add(persistenceBtn);
                 }
                 // Could possible have other button types here
-                else
+                else if (e is Model.Button)
                 {
+                    var btn = e as Model.Button;
                     Button persistenceBtn = new Button();
                     persistenceBtn.Id = btn.Id.ToString();
+                    persistenceBtn.X = btn.X;
+                    persistenceBtn.Y = btn.Y;
                     persistenceBtn.Label = btn.Label;
                     persistenceBtn.Icon = btn.Icon.ToString();
                     if (btn.ClickAction != null && btn.ClickActionImpl != null)
@@ -97,9 +102,9 @@ namespace TouchRemote.Model.Persistence
             }
         }
 
-        public IEnumerable<Model.Button> Load()
+        public IEnumerable<Model.Element> Load()
         {
-            List<Model.Button> buttons = new List<Model.Button>();
+            List<Model.Element> buttons = new List<Model.Element>();
             using (StreamReader reader = new StreamReader(File.OpenRead(_XmlFilename)))
             {
                 XmlReaderSettings settings = new XmlReaderSettings();
@@ -114,7 +119,7 @@ namespace TouchRemote.Model.Persistence
                 {
                     XmlSerializer xmlSerializer = new XmlSerializer(typeof(Buttons));
                     Buttons deserialized = (Buttons)xmlSerializer.Deserialize(xmlReader);
-                    foreach (ButtonBase b in deserialized.Items)
+                    foreach (Element b in deserialized.Items)
                     {
                         if (b is ToggleButton)
                         {
@@ -129,6 +134,8 @@ namespace TouchRemote.Model.Persistence
                             toggleButton.LabelOff = tb.LabelOff;
                             toggleButton.LabelOn = tb.LabelOn;
                             toggleButton.Id = new Guid(tb.Id);
+                            toggleButton.X = tb.X;
+                            toggleButton.Y = tb.Y;
                             if (tb.ToggleButtonToggleOffAction != null)
                             {
                                 toggleButton.ToggleOffAction = _PluginManager.GetActionDescriptor(tb.ToggleButtonToggleOffAction.Type);
@@ -166,6 +173,8 @@ namespace TouchRemote.Model.Persistence
                             button.Icon = icon;
                             button.Label = btn.Label;
                             button.Id = new Guid(btn.Id);
+                            button.X = btn.X;
+                            button.Y = btn.Y;
                             if (btn.ButtonClickAction != null)
                             {
                                 button.ClickAction = _PluginManager.GetActionDescriptor(btn.ButtonClickAction.Type);

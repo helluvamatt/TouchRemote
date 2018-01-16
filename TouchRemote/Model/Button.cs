@@ -7,10 +7,11 @@ using System.Xml.Serialization;
 using System.Xml;
 using System.Xml.Schema;
 using TouchRemote.UI.ConfigEditor.Model;
+using System.Collections.Generic;
 
 namespace TouchRemote.Model
 {
-    public class Button : DependencyObject, INotifyPropertyChanged
+    public class Button : Element
     {
         #region Dependency properties
 
@@ -18,8 +19,6 @@ namespace TouchRemote.Model
         public static readonly DependencyProperty LabelProperty = DependencyProperty.Register("Label", typeof(string), typeof(Button));
         public static readonly DependencyProperty ClickActionProperty = DependencyProperty.Register("ClickAction", typeof(IActionExecutableDescriptor), typeof(Button), new UIPropertyMetadata(ClickActionChanged));
         public static readonly DependencyProperty ClickActionImplProperty = DependencyProperty.Register("ClickActionImpl", typeof(ActionExecutable), typeof(Button));
-
-        public event PropertyChangedEventHandler PropertyChanged;
 
         private static void ClickActionChanged(DependencyObject obj, DependencyPropertyChangedEventArgs args)
         {
@@ -34,15 +33,7 @@ namespace TouchRemote.Model
             }
         }
 
-        protected override void OnPropertyChanged(DependencyPropertyChangedEventArgs e)
-        {
-            base.OnPropertyChanged(e);
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(e.Property.Name));
-        }
-
         #endregion
-
-        public Guid Id { get; set; }
 
         [Category("Appearance")]
         [DisplayName("Icon")]
@@ -101,6 +92,20 @@ namespace TouchRemote.Model
             set
             {
                 SetValue(ClickActionImplProperty, value);
+            }
+        }
+
+        public override Dictionary<string, string> WebProperties
+        {
+            get
+            {
+                var conv = new FontAwesome.WPF.Converters.CssClassNameConverter() { Mode = FontAwesome.WPF.Converters.CssClassConverterMode.FromIconToString };
+                var iconClass = (string)conv.Convert(Icon, typeof(string), null, null);
+                return new Dictionary<string, string>()
+                {
+                    { "Label", Label },
+                    { "IconClass", iconClass },
+                };
             }
         }
 

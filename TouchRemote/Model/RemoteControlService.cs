@@ -18,11 +18,11 @@ namespace TouchRemote.Model
 {
     internal class RemoteControlService : DependencyObject, IRemoteControlService
     {
-        public ObservableCollection<Button> Buttons { get; private set; }
+        public ObservableCollection<Element> Buttons { get; private set; }
 
         private PluginManager _PluginManager;
 
-        private Dictionary<Guid, Button> _ButtonDict;
+        private Dictionary<Guid, Element> _ElementDict;
 
         private ILog _Log;
 
@@ -34,49 +34,49 @@ namespace TouchRemote.Model
             _PluginManager = pluginManager;
             _PersistenceManager = new PersistenceManager(_PluginManager, Path.Combine(appDataPath, "Buttons.xml"));
 
-            Buttons = new ObservableCollection<Button>();
+            Buttons = new ObservableCollection<Element>();
             Buttons.CollectionChanged += Buttons_CollectionChanged;
-            _ButtonDict = new Dictionary<Guid, Button>();
+            _ElementDict = new Dictionary<Guid, Element>();
             Load();
         }
 
-        private void Buttons_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        private void Buttons_CollectionChanged(object sender, NotifyCollectionChangedEventArgs args)
         {
             Save();
-            GetBroadcastContext().RefreshButtons();
+            GetBroadcastContext().RefreshControls();
         }
 
-        private void Button_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        private void Element_PropertyChanged(object sender, PropertyChangedEventArgs args)
         {
-            var btn = sender as Button;
+            var e = sender as Button;
             Save();
-            GetBroadcastContext().UpdateButton(new WebButton(btn.Id, btn.Label, btn.Icon));
+            GetBroadcastContext().UpdateControl(new WebControl(e.Id, (int)Math.Round(e.X), (int)Math.Round(e.Y), GetControlType(e), e.WebProperties));
         }
 
         public Guid CreateId()
         {
             Guid guid = Guid.NewGuid();
-            while (_ButtonDict.ContainsKey(guid))
+            while (_ElementDict.ContainsKey(guid))
             {
                 guid = Guid.NewGuid();
             }
             return guid;
         }
 
-        public bool AddButton(Button button)
+        public bool AddElement(Element element)
         {
-            if (_ButtonDict.ContainsKey(button.Id)) return false;
-            _ButtonDict.Add(button.Id, button);
-            Buttons.Add(button);
-            button.PropertyChanged += Button_PropertyChanged;
+            if (_ElementDict.ContainsKey(element.Id)) return false;
+            _ElementDict.Add(element.Id, element);
+            Buttons.Add(element);
+            element.PropertyChanged += Element_PropertyChanged;
             return true;
         }
 
-        public bool RemoveButton(Button button)
+        public bool RemoveElement(Element element)
         {
-            if (_ButtonDict.Remove(button.Id) && Buttons.Remove(button))
+            if (_ElementDict.Remove(element.Id) && Buttons.Remove(element))
             {
-                button.PropertyChanged -= Button_PropertyChanged;
+                element.PropertyChanged -= Element_PropertyChanged;
                 return true;
             }
             return false;
@@ -99,13 +99,13 @@ namespace TouchRemote.Model
             try
             {
                 Buttons.CollectionChanged -= Buttons_CollectionChanged;
-                foreach (var btn in Buttons)
+                foreach (var e in Buttons)
                 {
-                    RemoveButton(btn);
+                    RemoveElement(e);
                 }
-                foreach (var btn in _PersistenceManager.Load())
+                foreach (var e in _PersistenceManager.Load())
                 {
-                    AddButton(btn);
+                    AddElement(e);
                 }
             }
             catch (Exception ex)
@@ -124,41 +124,50 @@ namespace TouchRemote.Model
         {
             return this.Invoke(() => {
                 _Log.InfoFormat("Handling button click for \"{0}\"...", id);
-                if (_ButtonDict.ContainsKey(id))
+                if (_ElementDict.ContainsKey(id))
                 {
-                    try
+                    var btn = _ElementDict[id] as Button;
+                    if (btn != null)
                     {
-                        _ButtonDict[id].Click();
-                        return true;
+                        try
+                        {
+                            btn.Click();
+                            return true;
+                        }
+                        catch (Exception ex)
+                        {
+                            _Log.Error(string.Format("{0} in click action for \"{1}\": {2}", ex.GetType().Name, id, ex.Message), ex);
+                        }
                     }
-                    catch (Exception ex)
+                    else
                     {
-                        _Log.Error(string.Format("{0} in click action for \"{1}\": {2}", ex.GetType().Name, id, ex.Message), ex);
+                        _Log.ErrorFormat("Not a button control: \"{0}\"", id);
                     }
                 }
                 else
                 {
-                    _Log.ErrorFormat("Button not found: \"{0}\"", id);
+                    _Log.ErrorFormat("Element not found: \"{0}\"", id);
                 }
                 return false;
             });
         }
 
-        public IEnumerable<WebButton> ButtonList
+        public IEnumerable<WebControl> ControlList
         {
             get
             {
                 return this.Invoke(() => {
-                    return new List<WebButton>(Buttons.Select(btn => new WebButton(btn.Id, btn.Label, btn.Icon)));
+                    return new List<WebControl>(Buttons.Select(e => new WebControl(e.Id, (int)Math.Round(e.X), (int)Math.Round(e.Y), GetControlType(e), e.WebProperties)));
                 });
             }
         }
 
-        public WebButton GetButton(Guid guid)
+        public WebControl GetControl(Guid guid)
         {
             return this.Invoke(() => {
-                var btn = _ButtonDict[guid];
-                return _ButtonDict.ContainsKey(guid) ? new WebButton(btn.Id, btn.Label, btn.Icon) : null;
+                var e = _ElementDict[guid];
+                
+                return _ElementDict.ContainsKey(guid) ? new WebControl(e.Id, (int)Math.Round(e.X), (int)Math.Round(e.Y), GetControlType(e), e.WebProperties) : null;
             });
         }
 
@@ -177,6 +186,15 @@ namespace TouchRemote.Model
         }
 
         #endregion
+
+        private WebControl.WebControlType GetControlType(Element control)
+        {
+            if (control is Button)
+            {
+                return WebControl.WebControlType.Button;
+            }
+            return WebControl.WebControlType.Unknown;
+        }
 
     }
 }

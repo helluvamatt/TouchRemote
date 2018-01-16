@@ -19,12 +19,14 @@ namespace TouchRemote
         {
             try
             {
+                int returnVal = 1;
+
                 // Check if this is the only instance of this application
                 if (!SingleInstance.Start())
                 {
                     // This is not the only instance, exit
                     Console.WriteLine(Resources.AnotherInstance);
-                    return 1;
+                    return returnVal;
                 }
 
                 var appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
@@ -39,32 +41,30 @@ namespace TouchRemote
                 var logFileAppender = new RollingFileAppender { File = Path.Combine(logPath, "TouchRemote.log"), Layout = layout };
                 BasicConfigurator.Configure(logFileAppender);
 
-                // Create the TrayApplicationContext - the controller of the entire application
-                var app = new AppContext(appData, vendorName, productName, args);
-                app.Logger.Info("Initializing...");
-
-                // Load GlobalStyle into the application resources
-                app.Resources.MergedDictionaries.Add(new ResourceDictionary { Source = new Uri("/TouchRemote;component/UI/GlobalStyle.xaml", UriKind.RelativeOrAbsolute) });
-
-                // Initialize the application
-                app.InitializeContext();
-
-                // Run the application
-                app.Logger.Info("Initialized. Starting main loop...");
-                int returnVal = 0;
-                try
+                // Create the AppContext - the controller of the entire application
+                using (var app = new AppContext(appData, vendorName, productName, args))
                 {
-                    returnVal = app.Run();
-                }
-                catch (Exception ex)
-                {
-                    app.Logger.Error("Unexpected exception:", ex);
-                    MessageBox.Show(ex.Message, Resources.ProgramTerminated, MessageBoxButton.OK, MessageBoxImage.Error);
-                    returnVal = 1;
-                }
+                    app.Logger.Info("Initializing...");
 
-                // Log the shutdown
-                app.Logger.Info("Exiting...");
+                    // Load GlobalStyle into the application resources
+                    app.Resources.MergedDictionaries.Add(new ResourceDictionary { Source = new Uri("/TouchRemote;component/UI/GlobalStyle.xaml", UriKind.RelativeOrAbsolute) });
+
+                    // Initialize the application
+                    app.InitializeContext();
+
+                    // Run the application
+                    app.Logger.Info("Initialized. Starting main loop...");
+                    try
+                    {
+                        returnVal = app.Run();
+                    }
+                    catch (Exception ex)
+                    {
+                        app.Logger.Error("Unexpected exception:", ex);
+                        MessageBox.Show(ex.Message, Resources.ProgramTerminated, MessageBoxButton.OK, MessageBoxImage.Error);
+                        returnVal = 1;
+                    }
+                }
 
                 return returnVal;
             }

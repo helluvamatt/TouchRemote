@@ -11,9 +11,9 @@ namespace TouchRemote.Model
     {
         bool Click(Guid guid);
 
-        IEnumerable<WebButton> ButtonList { get; }
+        IEnumerable<WebControl> ControlList { get; }
 
-        WebButton GetButton(Guid guid);
+        WebControl GetControl(Guid guid);
 
         string GetRequiredPassword();
     }

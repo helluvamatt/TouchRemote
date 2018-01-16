@@ -1,57 +1,66 @@
 ﻿const EventBus = new Vue();
 
-const Buttons = Vue.component('buttons', {
-    template: '#tpl_buttons',
+const UnknownControl = Vue.component('Unknown', {
+    template: ''
+});
+
+const ButtonControl = Vue.component('Button', {
+    template: '#tpl_button',
+    props: ['Id', 'Type', 'X', 'Y', 'Properties'],
+    methods: {
+        emitClicked: function () {
+            this.$emit('clicked');
+        }
+    }
+});
+
+const Controls = Vue.component('controls', {
+    template: '#tpl_controls',
     data: function () {
         return {
             loaded: false,
-            buttons: {}
+            controls: {}
         };
     },
     computed: {
-        buttonsDisplay: function () {
+        controlsDisplay: function () {
             var $this = this;
-            var arr = Object.keys($this.buttons).map(function (key) { return $this.buttons[key]; });
+            var arr = Object.keys($this.controls).map(function (key) { return $this.controls[key]; });
             return Array.prototype.sort.apply(arr, function (a, b) { return a.index - b.index; });
         }
     },
     created: function () {
         var $this = this;
-        EventBus.$on('button-updated', function (button) {
-            console.log("[Buttons] Got 'button-updated': %o", button);
-            $this.buttons[button.Id] = button;
+        EventBus.$on('control-updated', function (control) {
+            $this.controls[control.Id] = control;
         });
-        EventBus.$on('buttons-changed', function (data) {
-            console.log("[Buttons] Got 'buttons-changed': %o", data);
-            var buttonsDict = {};
+        EventBus.$on('controls-changed', function (data) {
+            var controlsDict = {};
             $.each(data, function (index, item) {
-                buttonsDict[item.Id] = $.extend({}, item, { index: index });
+                controlsDict[item.Id] = $.extend({}, item, { index: index });
             });
-            $this.buttons = buttonsDict;
+            $this.controls = controlsDict;
             $this.loaded = true;
         });
         EventBus.$on('hub-connected', function () {
-            console.log("[Buttons] Got 'hub-connected'");
-            $this.loadButtons();
+            $this.loadControls();
         });
     },
     methods: {
         sendClick: function (id) {
             EventBus.$emit('button-click', id);
         },
-        loadButtons: function () {
+        loadControls: function () {
             this.loaded = false;
-            EventBus.$emit('buttons-requested');
+            EventBus.$emit('controls-requested');
         }
     },
     mounted: function () {
-        console.log("[Buttons] mounted called");
-        this.loadButtons();
+        this.loadControls();
     },
     destroyed: function () {
-        console.log("[Buttons] destroyed called");
-        EventBus.$off('button-updated');
-        EventBus.$off('buttons-changed');
+        EventBus.$off('control-updated');
+        EventBus.$off('controls-changed');
         EventBus.$off('hub-connected');
     }
 });
@@ -94,9 +103,12 @@ const Login = Vue.component('login', {
 const router = new VueRouter({
     mode: 'history',
     routes: [
-        { name: 'index', path: '/', component: Buttons },
+        { name: 'index', path: '/', component: Controls },
         { name: 'login', path: '/login', component: Login }
-    ]
+    ],
+    scrollBehavior(to, from, savedPosition) {
+        return { x: 0, y: 0 };
+    }
 });
 
 var vm = new Vue({
@@ -111,13 +123,13 @@ var vm = new Vue({
     created: function () {
         var $vm = this;
         var remoteHub = $.connection.remoteHub;
-        var loadButtons = false;
+        var loadControls = false;
 
-        var getButtons = function () {
+        var getControls = function () {
             if ($vm.hubConnected) {
-                remoteHub.server.getButtons($vm.token).done(function (result) {
+                remoteHub.server.getControls($vm.token).done(function (result) {
                     if (result.IsValid) {
-                        EventBus.$emit('buttons-changed', result.Data);
+                        EventBus.$emit('controls-changed', result.Data);
                     } else {
                         $vm.$router.replace('/login');
                     }
@@ -148,10 +160,9 @@ var vm = new Vue({
             $vm.token = token;
         });
 
-        // Event from Buttons module: button collection requested, expecting "buttons-changed" event to be fired
-        EventBus.$on('buttons-requested', function () {
-            console.log("[Main] Got 'buttons-requested'");
-            getButtons();
+        // Event from Controls module: button collection requested, expecting "controls-changed" event to be fired
+        EventBus.$on('controls-requested', function () {
+            getControls();
         });
 
         EventBus.$on('button-click', function (id) {
@@ -159,7 +170,7 @@ var vm = new Vue({
                 remoteHub.server.clickButton($vm.token, id).done(function (result) {
                     if (result.IsValid) {
                         if (!result.Data) {
-                            getButtons();
+                            getControls();
                         }
                     } else {
                         $vm.$router.replace('/login');
@@ -168,18 +179,17 @@ var vm = new Vue({
             }
         });
 
-        //void UpdateButton(WebButton webButton);
-        remoteHub.client.updateButton = function (button) {
-            EventBus.$emit('button-updated', button);
+        //void UpdateControl(WebButton webButton);
+        remoteHub.client.updateControl = function (button) {
+            EventBus.$emit('control-updated', button);
         };
 
-        //void RefreshButtons();
-        remoteHub.client.refreshButtons = function () {
-            getButtons();
+        //void RefreshControls();
+        remoteHub.client.refreshControls = function () {
+            getControls();
         };
 
         $.connection.hub.start().done(function () {
-            console.log("[Main] hub connected");
             $vm.hubConnected = true;
             EventBus.$emit('hub-connected');
         });

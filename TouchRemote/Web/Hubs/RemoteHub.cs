@@ -47,9 +47,9 @@ namespace TouchRemote.Web.Hubs
             return base.OnReconnected();
         }
 
-        public AuthResponse<IEnumerable<WebButton>> GetButtons(string token)
+        public AuthResponse<IEnumerable<WebControl>> GetControls(string token)
         {
-            return Authenticate(token, () => _RemoteControlService.ButtonList);
+            return Authenticate(token, () => _RemoteControlService.ControlList);
         }
 
         public AuthResponse<bool> ClickButton(string token, string id)
@@ -121,7 +121,7 @@ namespace TouchRemote.Web.Hubs
 
     public interface IClient
     {
-        void UpdateButton(WebButton webButton);
-        void RefreshButtons();
+        void UpdateControl(WebControl webButton);
+        void RefreshControls();
     }
 }

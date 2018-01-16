@@ -3,27 +3,31 @@
     padding: 10px;
 }
 
-.buttons {
-    display: flex;
-    -ms-flex-direction: row;
-    -webkit-flex-direction: row;
-    flex-direction: row;
-    -ms-flex-wrap: wrap;
-    -webkit-flex-wrap: wrap;
-    flex-wrap: wrap;
+.controls {
+    position: relative;
     margin: 0 -10px;
 }
 
-.button {
-    margin: 0 10px 10px; /* top | horizontal | bottom */
-    padding: 16px;
-    min-height: 108px;
-    min-width: 108px;
-}
+    .controls .control {
+        position: absolute;
+    }
 
-.button .icon {
-    font-size: 48px;
-}
+    .controls  .control.btn {
+        padding: 16px;
+        min-height: 108px;
+        min-width: 108px;
+        max-width: 108px;
+    }
+
+        .controls .control.btn .icon {
+            font-size: 48px;
+        }
+
+        .controls .control.btn .lbl {
+            overflow-wrap: break-word;
+            -ms-word-wrap: break-word;
+            word-wrap: break-word;
+        }
 
 .shade {
     position: fixed;

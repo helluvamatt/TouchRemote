@@ -27,7 +27,7 @@ using System.Net.NetworkInformation;
 
 namespace TouchRemote
 {
-    internal class AppContext : Application
+    internal class AppContext : Application, IDisposable
     {
         #region Private members
 
@@ -127,6 +127,13 @@ namespace TouchRemote
             _WebServer = new WebServer(_ControlService, endpoints.ToArray());
         }
 
+        public void Dispose()
+        {
+            Logger.Info("Shutting down...");
+            _WebServer.Dispose();
+            _TaskbarIcon.Dispose();
+        }
+
         protected override void OnStartup(StartupEventArgs e)
         {
             _TaskbarIcon = new TaskbarIcon();
@@ -138,13 +145,6 @@ namespace TouchRemote
             DoToggleStatus(() => _WebServer.Start());
 
             if (_OnStartShowOptionsWindow) DoOpenOptions();
-        }
-
-        protected override void OnExit(ExitEventArgs e)
-        {
-            Logger.Info("Shutting down...");
-            _WebServer.Dispose();
-            _TaskbarIcon.Dispose();
         }
 
         #region Event handlers

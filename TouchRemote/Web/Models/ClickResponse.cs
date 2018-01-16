@@ -16,6 +16,6 @@ namespace TouchRemote.Web.Models
 
         public bool Success { get; set; }
 
-        public WebButton Button { get; set; }
+        public WebControl Button { get; set; }
     }
 }

@@ -29,6 +29,15 @@ namespace TouchRemote.UI
     /// </summary>
     internal partial class OptionsWindow : MetroWindow
     {
+        #region Private members
+
+        private Point contextMenuOpenedHere;
+
+        private ContentPresenter movingItem;
+        private Point startPoint;
+
+        #endregion
+
         #region Dependency properties
 
         public static readonly DependencyProperty PasswordRequiredProperty = DependencyProperty.Register("PasswordRequired", typeof(bool), typeof(OptionsWindow), new UIPropertyMetadata(PasswordRequiredChanged));
@@ -79,6 +88,8 @@ namespace TouchRemote.UI
 
         #endregion
 
+        #region Public properties
+
         public ObservableCollection<InterfaceModel> Interfaces { get; private set; }
 
         public RemoteControlService RemoteControlService { get; private set; }
@@ -101,6 +112,8 @@ namespace TouchRemote.UI
 
         public ICommand OpenUriCommand { get; private set; }
 
+        #endregion
+
         public OptionsWindow(RemoteControlService remoteControlService, PluginManager pluginManager, WebServer webServer, Action shutdownCallback)
         {
             RemoteControlService = remoteControlService;
@@ -110,8 +123,8 @@ namespace TouchRemote.UI
             ToggleErrorDetails = new DelegateCommand(() => ErrorDetailsVisible = !ErrorDetailsVisible);
             AddButtonCommand = new DelegateCommand(AddButton);
             AddToggleButtonCommand = new DelegateCommand(AddToggleButton);
-            OpenPropertiesCommand = new DelegateCommand<Model.Button>(ShowButtonProperties);
-            RemoveButtonCommand = new DelegateCommand<Model.Button>(RemoveButton);
+            OpenPropertiesCommand = new DelegateCommand<Element>(ShowButtonProperties);
+            RemoveButtonCommand = new DelegateCommand<Element>(RemoveElement);
             ShutdownCommand = new DelegateCommand(shutdownCallback);
             OpenUriCommand = new DelegateCommand<Uri>(OpenUri);
 
@@ -146,34 +159,44 @@ namespace TouchRemote.UI
             SetValue(PasswordRequiredProperty, !string.IsNullOrEmpty(Settings.Default.RequiredPassword));
         }
 
+        #region Event handlers
+
         private void AddButton()
         {
-            RemoteControlService.AddButton(new Model.Button { Id = RemoteControlService.CreateId(), Icon = FontAwesome.WPF.FontAwesomeIcon.Square, Label = "New Button" });
+            var pt = contextMenuOpenedHere;
+            if (pt == null) pt = new Point(0, 0);
+            RemoteControlService.AddElement(new Model.Button { Id = RemoteControlService.CreateId(), Icon = FontAwesome.WPF.FontAwesomeIcon.Square, Label = "New Button", X = (int)Math.Round(pt.X), Y = (int)Math.Round(pt.Y) });
         }
 
         private void AddToggleButton()
         {
-            RemoteControlService.AddButton(new ToggleButton { Id = RemoteControlService.CreateId(), IconOff = FontAwesome.WPF.FontAwesomeIcon.ToggleOff, IconOn = FontAwesome.WPF.FontAwesomeIcon.ToggleOn, LabelOff = "New Toggle Button", LabelOn = "New Toggle Button" });
+            var pt = contextMenuOpenedHere;
+            if (pt == null) pt = new Point(0, 0);
+            RemoteControlService.AddElement(new ToggleButton { Id = RemoteControlService.CreateId(), IconOff = FontAwesome.WPF.FontAwesomeIcon.ToggleOff, IconOn = FontAwesome.WPF.FontAwesomeIcon.ToggleOn, LabelOff = "New Toggle Button", LabelOn = "New Toggle Button", X = (int)Math.Round(pt.X), Y = (int)Math.Round(pt.Y) });
         }
 
-        private void ShowButtonProperties(Model.Button button)
+        private void ShowButtonProperties(Element element)
         {
             Window properties;
-            if (button is ToggleButton)
+            if (element is ToggleButton)
             {
-                properties = new ToggleButtonProperties(PluginManager, button as ToggleButton);
+                properties = new ToggleButtonProperties(PluginManager, element as ToggleButton);
+            }
+            else if (element is Model.Button)
+            {
+                properties = new ButtonProperties(PluginManager, element as Model.Button);
             }
             else
             {
-                properties = new ButtonProperties(PluginManager, button);
+                return;
             }
             properties.Owner = this;
             properties.ShowDialog();
         }
 
-        private void RemoveButton(Model.Button button)
+        private void RemoveElement(Element element)
         {
-            RemoteControlService.RemoveButton(button);
+            RemoteControlService.RemoveElement(element);
         }
 
         private void UpdateListenAddresses(InterfaceModel model)
@@ -199,6 +222,79 @@ namespace TouchRemote.UI
                 // Ignore
             }
         }
+
+        private void ItemsControl_PreviewMouseRightButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            var itemsControl = sender as ItemsControl;
+            contextMenuOpenedHere = Mouse.GetPosition(itemsControl);
+        }
+
+        private void item_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            var item = sender as ContentPresenter;
+            var canvas = item.FindAncestor<Canvas>();
+
+            startPoint = e.GetPosition(item);
+
+            movingItem = item;
+
+            // Obliterate Z-index for all children so the dragging item is on top
+            foreach (UIElement child in canvas.Children)
+            {
+                Panel.SetZIndex(child, 1);
+            }
+            Panel.SetZIndex(item, 2);
+
+            Mouse.Capture(item);
+        }
+
+        private void item_PreviewMouseMove(object sender, MouseEventArgs e)
+        {
+            if (movingItem != null)
+            {
+                var item = sender as ContentPresenter;
+                var canvas = item.FindAncestor<Canvas>();
+
+                double newLeft = e.GetPosition(canvas).X - startPoint.X - canvas.Margin.Left;
+                // newLeft inside canvas right-border?
+                if (newLeft > canvas.Margin.Left + canvas.ActualWidth - item.ActualWidth)
+                    newLeft = canvas.Margin.Left + canvas.ActualWidth - item.ActualWidth;
+                // newLeft inside canvas left-border?
+                else if (newLeft < canvas.Margin.Left)
+                    newLeft = canvas.Margin.Left;
+                item.SetValue(Canvas.LeftProperty, newLeft);
+
+                double newTop = e.GetPosition(canvas).Y - startPoint.Y - canvas.Margin.Top;
+                // newTop inside canvas bottom-border?
+                if (newTop > canvas.Margin.Top + canvas.ActualHeight - item.ActualHeight)
+                    newTop = canvas.Margin.Top + canvas.ActualHeight - item.ActualHeight;
+                // newTop inside canvas top-border?
+                else if (newTop < canvas.Margin.Top)
+                    newTop = canvas.Margin.Top;
+                item.SetValue(Canvas.TopProperty, newTop);
+            }
+        }
+
+        private void item_PreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            var item = sender as ContentPresenter;
+            var canvas = item.FindAncestor<Canvas>();
+
+            movingItem = null;
+
+            // Obliterate Z-index for all children so the dragging item is on top
+            foreach (UIElement child in canvas.Children)
+            {
+                Panel.SetZIndex(child, 1);
+            }
+            Panel.SetZIndex(item, 2);
+
+            Mouse.Capture(null);
+        }
+
+        #endregion
+
+        #region Model classes
 
         public class InterfaceModel
         {
@@ -238,5 +334,7 @@ namespace TouchRemote.UI
                 }
             }
         }
+
+        #endregion
     }
 }

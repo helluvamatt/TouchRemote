@@ -180,8 +180,33 @@
                 </Grid>
             </TabItem>
             <TabItem vm:IconTabItem.Icon="Th" Header="Layout" HeaderTemplate="{StaticResource tabItemTemplate}">
-                <ListView Grid.Row="1" ItemsSource="{Binding RemoteControlService.Buttons}" dd:DragDrop.IsDragSource="True" dd:DragDrop.IsDropTarget="True" VerticalContentAlignment="Top">
-                    <ListView.Resources>
+                <ItemsControl ItemsSource="{Binding RemoteControlService.Buttons}" FocusVisualStyle="{x:Null}" Background="Transparent" PreviewMouseRightButtonDown="ItemsControl_PreviewMouseRightButtonDown">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <Canvas ClipToBounds="True" />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ContextMenu>
+                        <ContextMenu>
+                            <ContextMenu.Resources>
+                                <Style TargetType="fa:ImageAwesome">
+                                    <Setter Property="Width" Value="20" />
+                                    <Setter Property="Height" Value="20" />
+                                </Style>
+                            </ContextMenu.Resources>
+                            <MenuItem Command="{Binding AddButtonCommand}" Header="Add button...">
+                                <MenuItem.Icon>
+                                    <fa:ImageAwesome Icon="PlusSquareOutline" />
+                                </MenuItem.Icon>
+                            </MenuItem>
+                            <MenuItem Command="{Binding AddToggleButtonCommand}" Header="Add toggle button...">
+                                <MenuItem.Icon>
+                                    <fa:ImageAwesome Icon="ToggleOn" />
+                                </MenuItem.Icon>
+                            </MenuItem>
+                        </ContextMenu>
+                    </ItemsControl.ContextMenu>
+                    <ItemsControl.Resources>
                         <ContextMenu x:Key="itemContextMenu">
                             <ContextMenu.Resources>
                                 <Style TargetType="fa:ImageAwesome">
@@ -201,69 +226,86 @@
                                 </MenuItem.Icon>
                             </MenuItem>
                         </ContextMenu>
-                    </ListView.Resources>
-                    <ListView.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <WrapPanel Orientation="Horizontal" ScrollViewer.VerticalScrollBarVisibility="Auto" />
-                        </ItemsPanelTemplate>
-                    </ListView.ItemsPanel>
-                    <ListView.ItemTemplate>
+                    </ItemsControl.Resources>
+                    <ItemsControl.ItemContainerStyle>
+                        <Style TargetType="ContentPresenter">
+                            <Setter Property="Canvas.Left" Value="{Binding Path=X, Mode=TwoWay}" />
+                            <Setter Property="Canvas.Top" Value="{Binding Path=Y, Mode=TwoWay}" />
+                            <Setter Property="AllowDrop" Value="True" />
+                            <EventSetter Event="PreviewMouseLeftButtonDown" Handler="item_PreviewMouseLeftButtonDown" />
+                            <EventSetter Event="PreviewMouseMove" Handler="item_PreviewMouseMove" />
+                            <EventSetter Event="PreviewMouseLeftButtonUp" Handler="item_PreviewMouseLeftButtonUp" />
+                        </Style>
+                    </ItemsControl.ItemContainerStyle>
+                    <ItemsControl.ItemTemplate>
                         <DataTemplate>
-                            <StackPanel Orientation="Vertical" VerticalAlignment="Top" MinHeight="56" Width="64" Background="Transparent" Tag="{Binding DataContext, RelativeSource={RelativeSource AncestorType=ListView}}" ContextMenu="{StaticResource itemContextMenu}">
-                                <Grid Margin="6">
-                                    <TextBlock HorizontalAlignment="Center" FontSize="22px">
-                                        <fa:FontAwesome Icon="{Binding Icon}" />
-                                    </TextBlock>
-                                    <TextBlock HorizontalAlignment="Right" VerticalAlignment="Bottom" FontSize="10px">
-                                        <TextBlock.Style>
-                                            <Style TargetType="TextBlock">
-                                                <Setter Property="Visibility" Value="Collapsed" />
-                                                <Style.Triggers>
-                                                    <DataTrigger Binding="{Binding Converter={StaticResource typeStringConverter}}" Value="ToggleButton">
-                                                        <Setter Property="Visibility" Value="Visible" />
-                                                    </DataTrigger>
-                                                </Style.Triggers>
-                                            </Style>
-                                        </TextBlock.Style>
-                                        <fa:FontAwesome>
-                                            <fa:FontAwesome.Style>
-                                                <Style TargetType="fa:FontAwesome">
-                                                    <Setter Property="Icon" Value="ToggleOff" />
+                            <Border Tag="{Binding DataContext, RelativeSource={RelativeSource AncestorType=ItemsControl}}" ContextMenu="{StaticResource itemContextMenu}">
+                                <Border.Style>
+                                    <Style TargetType="Border">
+                                        <Setter Property="Padding" Value="16" />
+                                        <Setter Property="MinHeight" Value="108" />
+                                        <Setter Property="MinWidth" Value="108" />
+                                        <Setter Property="MaxWidth" Value="108" />
+                                        <Setter Property="BorderThickness" Value="1" />
+                                        <Setter Property="BorderBrush">
+                                            <Setter.Value>
+                                                <SolidColorBrush Color="#FFCCCCCC" />
+                                            </Setter.Value>
+                                        </Setter>
+                                        <Setter Property="Background" Value="White" />
+                                        <Setter Property="CornerRadius" Value="4" />
+                                        <Style.Triggers>
+                                            <Trigger Property="Border.IsMouseOver" Value="True">
+                                                <Setter Property="BorderBrush">
+                                                    <Setter.Value>
+                                                        <SolidColorBrush Color="#FFADADAD" />
+                                                    </Setter.Value>
+                                                </Setter>
+                                                <Setter Property="Background">
+                                                    <Setter.Value>
+                                                        <SolidColorBrush Color="#FFE6E6E6" />
+                                                    </Setter.Value>
+                                                </Setter>
+                                            </Trigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Border.Style>
+                                <StackPanel Orientation="Vertical" VerticalAlignment="Top">
+                                    <Grid>
+                                        <TextBlock HorizontalAlignment="Center" FontSize="48px">
+                                            <fa:FontAwesome Icon="{Binding Icon}" />
+                                        </TextBlock>
+                                        <TextBlock HorizontalAlignment="Right" VerticalAlignment="Bottom" FontSize="10px">
+                                            <TextBlock.Style>
+                                                <Style TargetType="TextBlock">
+                                                    <Setter Property="Visibility" Value="Collapsed" />
                                                     <Style.Triggers>
-                                                        <DataTrigger Binding="{Binding Toggled}" Value="True">
-                                                            <Setter Property="Icon" Value="ToggleOn" />
+                                                        <DataTrigger Binding="{Binding Converter={StaticResource typeStringConverter}}" Value="ToggleButton">
+                                                            <Setter Property="Visibility" Value="Visible" />
                                                         </DataTrigger>
                                                     </Style.Triggers>
                                                 </Style>
-                                            </fa:FontAwesome.Style>
-                                        </fa:FontAwesome>
-                                    </TextBlock>
-                                </Grid>
-                                <TextBlock HorizontalAlignment="Stretch" TextAlignment="Center" TextWrapping="WrapWithOverflow" Text="{Binding Label}" />
-                            </StackPanel>
+                                            </TextBlock.Style>
+                                            <fa:FontAwesome>
+                                                <fa:FontAwesome.Style>
+                                                    <Style TargetType="fa:FontAwesome">
+                                                        <Setter Property="Icon" Value="ToggleOff" />
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding Toggled}" Value="True">
+                                                                <Setter Property="Icon" Value="ToggleOn" />
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </fa:FontAwesome.Style>
+                                            </fa:FontAwesome>
+                                        </TextBlock>
+                                    </Grid>
+                                    <TextBlock HorizontalAlignment="Stretch" TextAlignment="Center" TextWrapping="WrapWithOverflow" Text="{Binding Label}" />
+                                </StackPanel>
+                            </Border>
                         </DataTemplate>
-                    </ListView.ItemTemplate>
-                    <ListView.ContextMenu>
-                        <ContextMenu>
-                            <ContextMenu.Resources>
-                                <Style TargetType="fa:ImageAwesome">
-                                    <Setter Property="Width" Value="20" />
-                                    <Setter Property="Height" Value="20" />
-                                </Style>
-                            </ContextMenu.Resources>
-                            <MenuItem Command="{Binding AddButtonCommand}" Header="Add button...">
-                                <MenuItem.Icon>
-                                    <fa:ImageAwesome Icon="PlusSquareOutline" />
-                                </MenuItem.Icon>
-                            </MenuItem>
-                            <MenuItem Command="{Binding AddToggleButtonCommand}" Header="Add toggle button...">
-                                <MenuItem.Icon>
-                                    <fa:ImageAwesome Icon="ToggleOn" />
-                                </MenuItem.Icon>
-                            </MenuItem>
-                        </ContextMenu>
-                    </ListView.ContextMenu>
-                </ListView>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
             </TabItem>
             <TabItem vm:IconTabItem.Icon="Plug" Header="Plugins" HeaderTemplate="{StaticResource tabItemTemplate}">
                 <Grid>

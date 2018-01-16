@@ -8,6 +8,6 @@ namespace TouchRemote.Web.Models
 {
     public class DefaultModel
     {
-        public IEnumerable<WebButton> Buttons { get; set; }
+        public IEnumerable<WebControl> Buttons { get; set; }
     }
 }
