@@ -8,41 +8,47 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 using System.Xml;
 using TouchRemote.Lib;
+using TouchRemote.Lib.Attributes;
 
 namespace TouchRemote.Actions
 {
-    [ActionName("Key Press")]
-    [ActionDescription("Sends a global key event")]
+    [DisplayName("Key Press")]
+    [Description("Sends a global key event")]
     public class KeyPressAction : ActionExecutable
     {
         [ConfigProperty(Required = true)]
         [DisplayName("Alt modifier")]
         [Description("Key combination includes the Alt key")]
         [Category("Modifers")]
+        [PropertyOrder(1)]
         public bool Alt { get; set; }
 
         [ConfigProperty(Required = true)]
         [DisplayName("Control modifier")]
         [Description("Key combination includes the Control key")]
         [Category("Modifers")]
+        [PropertyOrder(2)]
         public bool Ctrl { get; set; }
 
         [ConfigProperty(Required = true)]
         [DisplayName("Shift modifier")]
         [Description("Key combination includes the Shift key")]
         [Category("Modifers")]
+        [PropertyOrder(3)]
         public bool Shift { get; set; }
 
         [ConfigProperty(Required = true)]
         [DisplayName("Meta Key modifier")]
         [Description("Key combination includes the Meta/Super/Windows key")]
         [Category("Modifers")]
+        [PropertyOrder(4)]
         public bool Meta { get; set; }
 
         [ConfigProperty(Required = true)]
         [DisplayName("Key")]
         [Description("Main key in the combination")]
         [Category("Key")]
+        [PropertyOrder(1)]
         public Key Key { get; set; }
 
         public void Execute()

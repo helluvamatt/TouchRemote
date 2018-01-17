@@ -9,7 +9,7 @@ const ButtonControl = Vue.component('Button', {
     props: ['Id', 'Type', 'X', 'Y', 'Properties'],
     methods: {
         emitClicked: function () {
-            this.$emit('clicked');
+            this.$emit('control-event', 'click');
         }
     }
 });
@@ -47,8 +47,8 @@ const Controls = Vue.component('controls', {
         });
     },
     methods: {
-        sendClick: function (id) {
-            EventBus.$emit('button-click', id);
+        handleEvent: function (id, eventName, eventData) {
+            EventBus.$emit('control-event', id, eventName, eventData);
         },
         loadControls: function () {
             this.loaded = false;
@@ -165,9 +165,9 @@ var vm = new Vue({
             getControls();
         });
 
-        EventBus.$on('button-click', function (id) {
+        EventBus.$on('control-event', function (id, name, data) {
             if ($vm.hubConnected) {
-                remoteHub.server.clickButton($vm.token, id).done(function (result) {
+                remoteHub.server.processEvent($vm.token, id, name, data).done(function (result) {
                     if (result.IsValid) {
                         if (!result.Data) {
                             getControls();

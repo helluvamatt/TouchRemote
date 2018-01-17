@@ -109,7 +109,7 @@ namespace TouchRemote.Model
             }
         }
 
-        public virtual void Click()
+        protected virtual void Click()
         {
             if (ClickActionImpl != null)
             {
@@ -120,6 +120,16 @@ namespace TouchRemote.Model
         public void NotifyClickActionImplChanged()
         {
             OnPropertyChanged(new DependencyPropertyChangedEventArgs(ClickActionImplProperty, null, ClickActionImpl));
+        }
+
+        public override bool CanHandleEvent(string eventName)
+        {
+            return eventName == "click";
+        }
+
+        public override void ProcessEvent(string eventName, object eventData)
+        {
+            Click();
         }
     }
 }

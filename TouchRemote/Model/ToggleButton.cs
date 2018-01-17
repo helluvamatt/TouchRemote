@@ -201,7 +201,7 @@ namespace TouchRemote.Model
             }
         }
 
-        public override void Click()
+        protected override void Click()
         {
             Toggled = !Toggled;
             if (Toggled)

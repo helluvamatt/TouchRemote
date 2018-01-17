@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace TouchRemote.Lib
+namespace TouchRemote.Lib.Attributes
 {
     /// <summary>
     /// Mark a property as a configuration property for the ActionExecutable

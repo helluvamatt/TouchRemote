@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.ComponentModel.Composition.Hosting;
 using System.ComponentModel.Composition.Registration;
@@ -92,14 +93,14 @@ namespace TouchRemote.Model
 
         private static string GetActionName(Type type)
         {
-            string name = type.GetAttributeValue<ActionNameAttribute, string>(attr => attr.Name);
+            string name = type.GetAttributeValue<DisplayNameAttribute, string>(attr => attr.DisplayName);
             if (string.IsNullOrEmpty(name)) name = type.Name;
             return name;
         }
 
         public static string GetActionDescription(Type type)
         {
-            return type.GetAttributeValue<ActionDescriptionAttribute, string>(attr => attr.Description);
+            return type.GetAttributeValue<DescriptionAttribute, string>(attr => attr.Description);
         }
     }
 }

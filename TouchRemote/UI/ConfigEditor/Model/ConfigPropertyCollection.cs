@@ -2,27 +2,28 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Reflection;
-using TouchRemote.Lib;
+using TouchRemote.Lib.Attributes;
 
 namespace TouchRemote.UI.ConfigEditor.Model
 {
     internal class ConfigPropertyCollection : Collection<ConfigProperty>
     {
-        public static ConfigPropertyCollection FromObject(object configObject, Action<ConfigProperty> changeCallback)
+        public static ConfigPropertyCollection FromObject(object configObject)
         {
             var collection = new ConfigPropertyCollection();
             if (configObject != null)
             {
-                foreach (var propInfo in configObject.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance))
+                Type type = configObject.GetType();
+                foreach (var propInfo in type.GetProperties(BindingFlags.Public | BindingFlags.Instance))
                 {
                     var attr = propInfo.GetCustomAttribute<ConfigPropertyAttribute>();
-                    var attrDisplayName = propInfo.GetCustomAttribute<DisplayNameAttribute>();
-                    var attrDescription = propInfo.GetCustomAttribute<DescriptionAttribute>();
-                    if (attr != null && collection.CheckType(propInfo.PropertyType))
+                    if (attr != null)
                     {
-                        var configProp = new ConfigProperty(propInfo.Name, propInfo.PropertyType, attrDisplayName != null ? attrDisplayName.DisplayName : propInfo.Name, attrDescription != null ? attrDescription.Description : "", propInfo.GetValue(configObject));
-                        configProp.PropertyChanged += (sender, args) => { propInfo.SetValue(configObject, configProp.Value); changeCallback?.Invoke(configProp); };
-                        collection.Add(configProp);
+                        var attrDisplayName = propInfo.GetCustomAttribute<DisplayNameAttribute>();
+                        var attrDescription = propInfo.GetCustomAttribute<DescriptionAttribute>();
+                        var attrCategory = propInfo.GetCustomAttribute<CategoryAttribute>();
+                        var attrOrder = propInfo.GetCustomAttribute<PropertyOrderAttribute>();
+                        collection.Add(new ConfigProperty(propInfo, attrDisplayName != null ? attrDisplayName.DisplayName : propInfo.Name, attrDescription != null ? attrDescription.Description : "", attrCategory != null ? attrCategory.Category : null, attrOrder != null ? attrOrder.Order : int.MaxValue));
                     }
                 }
             }
@@ -30,18 +31,5 @@ namespace TouchRemote.UI.ConfigEditor.Model
         }
 
         private ConfigPropertyCollection() { }
-
-        private bool CheckType(Type type)
-        {
-            return type.IsPrimitive
-                || type.IsEnum
-                || type.IsAssignableFrom(typeof(string))
-                || type.IsAssignableFrom(typeof(DateTime))
-                || type.IsAssignableFrom(typeof(TimeSpan))
-                || type.IsAssignableFrom(typeof(Uri))
-                || type.IsAssignableFrom(typeof(System.IO.FileInfo))
-                || type.IsAssignableFrom(typeof(TimeZoneInfo))
-                || (type.IsGenericType && type.GetGenericTypeDefinition().Equals(typeof(Nullable<>)) && CheckType(Nullable.GetUnderlyingType(type)));
-        }
     }
 }

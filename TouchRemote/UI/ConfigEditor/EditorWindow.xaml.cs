@@ -15,9 +15,8 @@ using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using TouchRemote.Utils;
 using TouchRemote.UI.ConfigEditor.Model;
-using System.Reflection;
-using TouchRemote.Lib;
 using System.ComponentModel;
+using Xceed.Wpf.Toolkit.PropertyGrid.Attributes;
 
 namespace TouchRemote.UI.ConfigEditor
 {
@@ -28,24 +27,7 @@ namespace TouchRemote.UI.ConfigEditor
     {
         #region Dependency properties
 
-        //public static readonly DependencyProperty SelectedPropertyProperty = DependencyProperty.Register("SelectedProperty", typeof(ConfigProperty), typeof(EditorWindow));
         public static readonly DependencyProperty SelectedObjectProperty = DependencyProperty.Register("SelectedObject", typeof(object), typeof(EditorWindow));
-
-        //public ConfigPropertyCollection Properties { get; private set; }
-
-        /*
-        public ConfigProperty SelectedProperty
-        {
-            get
-            {
-                return (ConfigProperty)GetValue(SelectedPropertyProperty);
-            }
-            set
-            {
-                SetValue(SelectedPropertyProperty, value);
-            }
-        }
-        */
 
         public object SelectedObject
         {
@@ -59,19 +41,29 @@ namespace TouchRemote.UI.ConfigEditor
             }
         }
 
-        private Action _PropertyChangeCallback;
-
         #endregion
+
+        private Action _PropertyChangeCallback;
 
         public EditorWindow(object action, Action propertyChangedCallback)
         {
-            SelectedObject = action;
             _PropertyChangeCallback = propertyChangedCallback;
-            //Properties = ConfigPropertyCollection.FromObject(action, changeCallback);
+            var configPropCollection = ConfigPropertyCollection.FromObject(action);
             InitializeComponent();
+            foreach (var configProp in configPropCollection)
+            {
+                var def = new Xceed.Wpf.Toolkit.PropertyGrid.PropertyDefinition();
+                def.TargetProperties = new string[] { configProp.Name };
+                def.DisplayName = configProp.DisplayName;
+                def.Description = configProp.Description;
+                def.Category = configProp.Category;
+                def.DisplayOrder = configProp.SortOrder;
+                _PropertyGrid.PropertyDefinitions.Add(def);
+            }
+            SelectedObject = action;
         }
 
-        private void PropertyGrid_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        private void PropertyGrid_PropertyValueChanged(object sender, Xceed.Wpf.Toolkit.PropertyGrid.PropertyValueChangedEventArgs e)
         {
             _PropertyChangeCallback.Invoke();
         }

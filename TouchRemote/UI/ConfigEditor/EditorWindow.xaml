@@ -21,52 +21,20 @@
                 BorderBrush="{DynamicResource AccentColorBrush}"
                 BorderThickness="1">
     <ma:MetroWindow.Resources>
-        <uc:IsNullToVisibilityConverter x:Key="nullToVisibilityConverter" />
+        <uc:EnumValuesConverter x:Key="enumValuesConverter" />
     </ma:MetroWindow.Resources>
-    <xctk:PropertyGrid SelectedObject="{Binding SelectedObject}" PropertyChanged="PropertyGrid_PropertyChanged" />
-    <!--
-    <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="*" />
-            <RowDefinition Height="auto" />
-        </Grid.RowDefinitions>
-        <ListBox SelectedItem="{Binding SelectedProperty}" ItemsSource="{Binding Properties}">
-            <ListBox.ItemsPanel>
-                <ItemsPanelTemplate>
-                    <StackPanel Orientation="Vertical" Grid.IsSharedSizeScope="True"/>
-                </ItemsPanelTemplate>
-            </ListBox.ItemsPanel>
-            <ListBox.ItemContainerStyle>
-                <Style TargetType="{x:Type ListBoxItem}">
-                    <Setter Property="FocusVisualStyle" Value="{x:Null}" />
-                    <Style.Triggers>
-                        <Trigger Property="IsSelected" Value="True">
-                            <Setter Property="FocusManager.FocusedElement" Value="{Binding RelativeSource={RelativeSource Self}}" />
-                        </Trigger>
-                    </Style.Triggers>
-                </Style>
-            </ListBox.ItemContainerStyle>
-            <ListBox.ItemTemplate>
-                <DataTemplate>
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition SharedSizeGroup="ColumnOne" />
-                            <ColumnDefinition Width="*" />
-                        </Grid.ColumnDefinitions>
-                        <Label Content="{Binding DisplayName}" Margin="4"/>
-                        <ContentControl Grid.Column="1" Margin="4" Content="{Binding Value}">
-                            <ContentControl.ContentTemplateSelector>
-                                <local:EditorTemplateSelector />
-                            </ContentControl.ContentTemplateSelector>
-                        </ContentControl>
-                    </Grid>
-                </DataTemplate>
-            </ListBox.ItemTemplate>
-        </ListBox>
-        <StackPanel Grid.Row="1" Visibility="{Binding SelectedProperty, Converter={StaticResource nullToVisibilityConverter}}" Orientation="Vertical" Margin="4">
-            <TextBlock TextWrapping="Wrap" FontWeight="Bold" Text="{Binding SelectedProperty.DisplayName}" />
-            <TextBlock TextWrapping="Wrap" Text="{Binding SelectedProperty.Description}" />
-        </StackPanel>
-    </Grid>
-    -->
+    <xctk:PropertyGrid x:Name="_PropertyGrid" SelectedObject="{Binding SelectedObject}" PropertyValueChanged="PropertyGrid_PropertyValueChanged" ShowSortOptions="False" ShowSearchBox="False" ShowTitle="False" IsMiscCategoryLabelHidden="True" AutoGenerateProperties="False">
+        <xctk:PropertyGrid.EditorDefinitions>
+            <xctk:EditorTemplateDefinition>
+                <xctk:EditorTemplateDefinition.TargetProperties>
+                    <xctk:TargetPropertyType Type="{x:Type sys:Enum}" />
+                </xctk:EditorTemplateDefinition.TargetProperties>
+                <xctk:EditorTemplateDefinition.EditingTemplate>
+                    <DataTemplate>
+                        <ComboBox ItemsSource="{Binding Value, Converter={StaticResource enumValuesConverter}}" SelectedItem="{Binding Value}" />
+                    </DataTemplate>
+                </xctk:EditorTemplateDefinition.EditingTemplate>
+            </xctk:EditorTemplateDefinition>
+        </xctk:PropertyGrid.EditorDefinitions>
+    </xctk:PropertyGrid>
 </ma:MetroWindow>

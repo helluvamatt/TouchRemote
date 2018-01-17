@@ -9,7 +9,7 @@ namespace TouchRemote.Model
 {
     public interface IRemoteControlService
     {
-        bool Click(Guid guid);
+        bool ProcessEvent(Guid guid, string eventName, object eventData);
 
         IEnumerable<WebControl> ControlList { get; }
 

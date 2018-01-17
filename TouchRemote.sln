@@ -12,6 +12,14 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TouchRemoteLib", "TouchRemo
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TouchRemoteNative", "TouchRemoteNative\TouchRemoteNative.vcxproj", "{2D581865-4764-46DF-A4B0-345717BDD10D}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Plugins", "Plugins", "{94C32813-F7B3-4B37-B117-28D48284CC76}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TouchRemote.Plugins.Volume", "TouchRemote.Plugins.Volume\TouchRemote.Plugins.Volume.csproj", "{2954405B-93A3-494E-8C20-0BE9D71401C6}"
+	ProjectSection(ProjectDependencies) = postProject
+		{F822E064-A61C-4472-8F79-385D1D3546C8} = {F822E064-A61C-4472-8F79-385D1D3546C8}
+		{FF796FB2-29C7-4D05-A583-88FAE3AFA9F8} = {FF796FB2-29C7-4D05-A583-88FAE3AFA9F8}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -54,6 +62,18 @@ Global
 		{2D581865-4764-46DF-A4B0-345717BDD10D}.Release|x64.Build.0 = Release|x64
 		{2D581865-4764-46DF-A4B0-345717BDD10D}.Release|x86.ActiveCfg = Release|Win32
 		{2D581865-4764-46DF-A4B0-345717BDD10D}.Release|x86.Build.0 = Release|Win32
+		{2954405B-93A3-494E-8C20-0BE9D71401C6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2954405B-93A3-494E-8C20-0BE9D71401C6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2954405B-93A3-494E-8C20-0BE9D71401C6}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{2954405B-93A3-494E-8C20-0BE9D71401C6}.Debug|x64.Build.0 = Debug|Any CPU
+		{2954405B-93A3-494E-8C20-0BE9D71401C6}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{2954405B-93A3-494E-8C20-0BE9D71401C6}.Debug|x86.Build.0 = Debug|Any CPU
+		{2954405B-93A3-494E-8C20-0BE9D71401C6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2954405B-93A3-494E-8C20-0BE9D71401C6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2954405B-93A3-494E-8C20-0BE9D71401C6}.Release|x64.ActiveCfg = Release|Any CPU
+		{2954405B-93A3-494E-8C20-0BE9D71401C6}.Release|x64.Build.0 = Release|Any CPU
+		{2954405B-93A3-494E-8C20-0BE9D71401C6}.Release|x86.ActiveCfg = Release|Any CPU
+		{2954405B-93A3-494E-8C20-0BE9D71401C6}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

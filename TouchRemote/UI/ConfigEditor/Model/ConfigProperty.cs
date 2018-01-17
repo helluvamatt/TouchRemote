@@ -1,78 +1,41 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
 
 namespace TouchRemote.UI.ConfigEditor.Model
 {
-    internal class ConfigProperty : DependencyObject, INotifyPropertyChanged
+    internal class ConfigProperty
     {
-        public event PropertyChangedEventHandler PropertyChanged;
+        private PropertyInfo _PropInfo;
 
-        #region Dependency properties
+        public string DisplayName { get; private set; }
 
-        public static readonly DependencyProperty DisplayNameProperty = DependencyProperty.Register("DisplayName", typeof(string), typeof(ConfigProperty));
-        public static readonly DependencyProperty DescriptionProperty = DependencyProperty.Register("Description", typeof(string), typeof(ConfigProperty));
-        public static readonly DependencyProperty ValueProperty = DependencyProperty.Register("Value", typeof(object), typeof(ConfigProperty), new UIPropertyMetadata(ValueChanged));
+        public string Description { get; private set; }
 
-        private static void ValueChanged(DependencyObject obj, DependencyPropertyChangedEventArgs args)
+        public string Name => _PropInfo.Name;
+
+        public Type Type => _PropInfo.PropertyType;
+
+        public string Category { get; private set; }
+
+        public int SortOrder { get; private set; }
+
+        public object GetValue(object obj)
         {
-            (obj as ConfigProperty)?.PropertyChanged?.Invoke(obj, new PropertyChangedEventArgs(args.Property.Name));
+            return _PropInfo.GetValue(obj);
         }
 
-        public string DisplayName
+        public void SetValue(object obj, object value)
         {
-            get
-            {
-                return (string)GetValue(DisplayNameProperty);
-            }
-            private set
-            {
-                SetValue(DisplayNameProperty, value);
-            }
+            _PropInfo.SetValue(obj, value);
         }
 
-        public string Description
+        public ConfigProperty(PropertyInfo propInfo, string displayName, string description, string category, int order)
         {
-            get
-            {
-                return (string)GetValue(DescriptionProperty);
-            }
-            private set
-            {
-                SetValue(DescriptionProperty, value);
-            }
-        }
-
-        public object Value
-        {
-            get
-            {
-                return GetValue(ValueProperty);
-            }
-            set
-            {
-                SetValue(ValueProperty, value);
-            }
-        }
-
-        #endregion
-
-        public string Name { get; private set; }
-
-        public Type Type { get; private set; }
-
-        public ConfigProperty(string name, Type type, string displayName, string description, object value)
-        {
-            Name = name;
-            Type = type;
+            _PropInfo = propInfo;
             DisplayName = displayName;
             Description = description;
-            Value = value;
+            Category = category;
+            SortOrder = order;
         }
     }
 }

@@ -15,7 +15,7 @@ namespace TouchRemote.Utils.Converters
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            var collection = ConfigPropertyCollection.FromObject(value, null);
+            var collection = ConfigPropertyCollection.FromObject(value);
             return collection.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
         }
 

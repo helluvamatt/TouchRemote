@@ -120,28 +120,28 @@ namespace TouchRemote.Model
 
         #region IRemoteControlService implementation
 
-        public bool Click(Guid id)
+        public bool ProcessEvent(Guid id, string eventName, object eventData)
         {
             return this.Invoke(() => {
                 _Log.InfoFormat("Handling button click for \"{0}\"...", id);
                 if (_ElementDict.ContainsKey(id))
                 {
-                    var btn = _ElementDict[id] as Button;
-                    if (btn != null)
+                    Element control = _ElementDict[id];
+                    if (control.CanHandleEvent(eventName))
                     {
                         try
                         {
-                            btn.Click();
+                            control.ProcessEvent(eventName, eventData);
                             return true;
                         }
                         catch (Exception ex)
                         {
-                            _Log.Error(string.Format("{0} in click action for \"{1}\": {2}", ex.GetType().Name, id, ex.Message), ex);
+                            _Log.Error(string.Format("{0} in event handler for \"{1}\": {2}", ex.GetType().Name, control, ex.Message), ex);
                         }
                     }
                     else
                     {
-                        _Log.ErrorFormat("Not a button control: \"{0}\"", id);
+                        _Log.ErrorFormat("Control \"{0}\" cannot handle event \"{1}\"", control, eventName);
                     }
                 }
                 else

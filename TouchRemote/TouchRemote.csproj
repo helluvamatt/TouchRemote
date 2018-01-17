@@ -183,6 +183,7 @@
     </Compile>
     <Compile Include="Model\IActionExecutableDescriptor.cs" />
     <Compile Include="Model\Persistence\PersistenceManager.cs" />
+    <Compile Include="Utils\Converters\EnumValuesConverter.cs" />
     <Compile Include="Utils\PresentationUtils.cs" />
     <Compile Include="Web\Hubs\RemoteHub.cs" />
     <Compile Include="Web\Models\AuthResponse.cs" />

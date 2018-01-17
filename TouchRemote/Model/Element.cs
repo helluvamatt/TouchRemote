@@ -47,10 +47,19 @@ namespace TouchRemote.Model
 
         public abstract Dictionary<string, string> WebProperties { get; }
 
+        public abstract bool CanHandleEvent(string eventName);
+
+        public abstract void ProcessEvent(string eventName, object eventData);
+
         protected override void OnPropertyChanged(DependencyPropertyChangedEventArgs e)
         {
             base.OnPropertyChanged(e);
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(e.Property.Name));
+        }
+
+        public override string ToString()
+        {
+            return string.Format("{0} [{1}]", GetType().Name, Id);
         }
     }
 }

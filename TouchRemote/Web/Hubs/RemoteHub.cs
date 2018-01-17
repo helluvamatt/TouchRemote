@@ -10,6 +10,11 @@ using TouchRemote.Web.Models;
 using System.Threading.Tasks;
 using System.Net;
 
+// TODO Change hub server method ClickButton to be more generic, ie. handling any event that can be sent back to the server:
+// - MouseDown and MouseUp for handling button repeating
+// - Slider move
+// - Etc?
+
 namespace TouchRemote.Web.Hubs
 {
     [HubName("remoteHub")]
@@ -52,14 +57,14 @@ namespace TouchRemote.Web.Hubs
             return Authenticate(token, () => _RemoteControlService.ControlList);
         }
 
-        public AuthResponse<bool> ClickButton(string token, string id)
+        public AuthResponse<bool> ProcessEvent(string token, string id, string eventName, object eventData)
         {
             return Authenticate(token, () =>
             {
                 Guid guid;
                 if (Guid.TryParse(id, out guid))
                 {
-                    return _RemoteControlService.Click(guid);
+                    return _RemoteControlService.ProcessEvent(guid, eventName, eventData);
                 }
                 return false;
             });
