@@ -6,10 +6,24 @@ const UnknownControl = Vue.component('Unknown', {
 
 const ButtonControl = Vue.component('Button', {
     template: '#tpl_button',
-    props: ['Id', 'Type', 'X', 'Y', 'Properties'],
+    props: ['Id', 'Type', 'X', 'Y', 'ZIndex', 'Properties'],
     methods: {
         emitClicked: function () {
             this.$emit('control-event', 'click');
+        }
+    }
+});
+
+const SliderControl = Vue.component('Slider', {
+    template: '#tpl_slider',
+    props: ['Id', 'Type', 'X', 'Y', 'ZIndex', 'Properties'],
+    data: function () {
+        return {};
+    },
+    methods: {
+        valueChanged: function (e) {
+            var value = Number.parseFloat(e.target.value);
+            this.$emit('control-event', 'value-changed', value);
         }
     }
 });
@@ -118,7 +132,7 @@ var vm = new Vue({
         token: '',
         error: null,
         reconnecting: false,
-        hubConnected: false
+        hubConnected: false,
     },
     created: function () {
         var $vm = this;
@@ -160,12 +174,13 @@ var vm = new Vue({
             $vm.token = token;
         });
 
-        // Event from Controls module: button collection requested, expecting "controls-changed" event to be fired
+        // Event from Controls module: control collection requested, expecting "controls-changed" event to be fired
         EventBus.$on('controls-requested', function () {
             getControls();
         });
 
-        EventBus.$on('control-event', function (id, name, data) {
+        // Event from Controls module: control event fired to be sent to server, rate limited to 10 Hz
+        var sendControlEvent = throttle(function (id, name, data) {
             if ($vm.hubConnected) {
                 remoteHub.server.processEvent($vm.token, id, name, data).done(function (result) {
                     if (result.IsValid) {
@@ -177,7 +192,8 @@ var vm = new Vue({
                     }
                 });
             }
-        });
+        }, 50);
+        EventBus.$on('control-event', sendControlEvent);
 
         //void UpdateControl(WebButton webButton);
         remoteHub.client.updateControl = function (button) {

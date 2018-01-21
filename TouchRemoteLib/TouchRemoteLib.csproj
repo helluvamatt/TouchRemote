@@ -41,7 +41,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ActionExecutable.cs" />
-    <Compile Include="BoundProperty.cs" />
+    <Compile Include="Attributes\PluginIconAttribute.cs" />
+    <Compile Include="BooleanBoundProperty.cs" />
+    <Compile Include="StringBoundProperty.cs" />
+    <Compile Include="FloatBoundProperty.cs" />
     <Compile Include="Common.cs" />
     <Compile Include="Attributes\ConfigPropertyAttribute.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

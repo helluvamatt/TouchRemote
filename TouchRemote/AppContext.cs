@@ -24,6 +24,8 @@ using System.Windows.Controls.Primitives;
 using System.Threading;
 using Mono.Options;
 using System.Net.NetworkInformation;
+using TouchRemote.Model.Impl;
+using TouchRemote.Model.Persistence;
 
 namespace TouchRemote
 {
@@ -37,6 +39,7 @@ namespace TouchRemote
 
         private RemoteControlService _ControlService;
         private PluginManager _PluginManager;
+        private IconManager _IconManager;
 
         private TaskbarIcon _TaskbarIcon;
 
@@ -125,6 +128,7 @@ namespace TouchRemote
             _PluginManager = new PluginManager(Path.Combine(Assembly.GetEntryAssembly().GetAssemblyDir(), "plugins"));
             _ControlService = new RemoteControlService(_AppDataPath, _PluginManager);
             _WebServer = new WebServer(_ControlService, endpoints.ToArray());
+            _IconManager = new IconManager(Path.Combine(_AppDataPath, "icons"));
         }
 
         public void Dispose()
@@ -170,7 +174,7 @@ namespace TouchRemote
         {
             if (_OptionsWindow == null)
             {
-                _OptionsWindow = new OptionsWindow(_ControlService, _PluginManager, _WebServer, Shutdown);
+                _OptionsWindow = new OptionsWindow(_ControlService, _PluginManager, _IconManager, _WebServer, Shutdown);
                 _OptionsWindow.Closed += (sender, e) => _OptionsWindow = null;
                 _OptionsWindow.Show();
             }

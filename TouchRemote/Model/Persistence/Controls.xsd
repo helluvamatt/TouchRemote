@@ -1,0 +1,136 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xs:schema id="Buttons"
+    targetNamespace="http://schneenet.com/Controls.xsd"
+    elementFormDefault="qualified"
+    xmlns="http://schneenet.com/Controls.xsd"
+    xmlns:mstns="http://schneenet.com/Controls.xsd"
+    xmlns:xs="http://www.w3.org/2001/XMLSchema"
+>
+  <xs:complexType name="ImplInstance">
+    <xs:sequence>
+      <xs:any processContents="lax" />
+    </xs:sequence>
+    <xs:attribute name="Type" type="xs:string" />
+  </xs:complexType>
+
+  <xs:complexType name="ActionExecutableInstance">
+    <xs:complexContent>
+      <xs:extension base="ImplInstance" />
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="FloatBoundPropertyInstance">
+    <xs:complexContent>
+      <xs:extension base="ImplInstance" />
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="BooleanBoundPropertyInstance">
+    <xs:complexContent>
+      <xs:extension base="ImplInstance" />
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="StringBoundPropertyInstance">
+    <xs:complexContent>
+      <xs:extension base="ImplInstance" />
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="IconSource" />
+
+  <xs:complexType name="CustomIconSource">
+    <xs:complexContent>
+      <xs:extension base="IconSource">
+        <xs:attribute name="Data" type="xs:base64Binary" />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="BuiltinIconSource">
+    <xs:complexContent>
+      <xs:extension base="IconSource">
+        <xs:attribute name="Icon" type="xs:string" />
+        <xs:attribute name="Color" type="xs:string" />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  
+  <xs:complexType name="IconHolder">
+    <xs:sequence minOccurs="1" maxOccurs="1">
+      <xs:element name="Source" type="IconSource" />
+    </xs:sequence>
+    <xs:attribute name="Name" type="xs:string" />
+  </xs:complexType>
+  
+  <xs:complexType name="RemoteElement">
+    <xs:attribute name="Id" type="xs:string" use="required" />
+    <xs:attribute name="X" type="xs:double" use="required" />
+    <xs:attribute name="Y" type="xs:double" use="required" />
+    <xs:attribute name="ZIndex" type="xs:int" use="required" />
+  </xs:complexType>
+
+  <xs:complexType name="RemoteSlider">
+    <xs:complexContent>
+      <xs:extension base="RemoteElement">
+        <xs:all minOccurs="0">
+          <xs:element name="RemoteSlider.Value" type="FloatBoundPropertyInstance" />
+        </xs:all>
+        <xs:attribute name="Label" type="xs:string" use="required" />
+        <xs:attribute name="Orientation" type="xs:int" use="required" />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  
+  <xs:complexType name="RemoteButton">
+    <xs:complexContent>
+      <xs:extension base="RemoteElement">
+        <xs:all>
+          <xs:element name="RemoteButton.ClickAction" type="ActionExecutableInstance" minOccurs="1" maxOccurs="1" />
+          <xs:element name="RemoteButton.Icon" type="IconHolder" minOccurs="0" maxOccurs="1" />
+        </xs:all>
+        <xs:attribute name="Label" type="xs:string" use="required" />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="RemoteToggleButton">
+    <xs:complexContent>
+      <xs:extension base="RemoteElement">
+        <xs:all>
+          <xs:element name="RemoteToggleButton.ToggleOnAction" type="ActionExecutableInstance" minOccurs="0" maxOccurs="1" />
+          <xs:element name="RemoteToggleButton.ToggleOffAction" type="ActionExecutableInstance" minOccurs="0" maxOccurs="1" />
+          <xs:element name="RemoteToggleButtonBase.IconOn" type="IconHolder" minOccurs="1" maxOccurs="1" />
+          <xs:element name="RemoteToggleButtonBase.IconOff" type="IconHolder" minOccurs="1" maxOccurs="1" />
+        </xs:all>
+        <xs:attribute name="LabelOn" type="xs:string" use="required" />
+        <xs:attribute name="LabelOff" type="xs:string" use="required" />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="RemoteBoundToggleButton">
+    <xs:complexContent>
+      <xs:extension base="RemoteElement">
+        <xs:all>
+          <xs:element name="RemoteBoundToggleButton.ToggledProp" type="BooleanBoundPropertyInstance" />
+          <xs:element name="RemoteToggleButtonBase.IconOn" type="IconHolder" minOccurs="1" maxOccurs="1" />
+          <xs:element name="RemoteToggleButtonBase.IconOff" type="IconHolder" minOccurs="1" maxOccurs="1" />
+        </xs:all>
+        <xs:attribute name="LabelOn" type="xs:string" use="required" />
+        <xs:attribute name="LabelOff" type="xs:string" use="required" />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  
+  <xs:element name="Controls">
+    <xs:complexType>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:element name="Button" type="RemoteButton" />
+        <xs:element name="ToggleButton" type="RemoteToggleButton" />
+        <xs:element name="BoundToggleButton" type="RemoteBoundToggleButton" />
+        <xs:element name="Slider" type="RemoteSlider" />
+      </xs:choice>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

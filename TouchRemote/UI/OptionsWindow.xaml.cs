@@ -18,9 +18,13 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using TouchRemote.Model;
+using TouchRemote.Model.Persistence.Controls;
+using TouchRemote.Model.Impl;
 using TouchRemote.Properties;
 using TouchRemote.Utils;
 using R = TouchRemote.Properties.Resources;
+using FontAwesome.WPF;
+using TouchRemote.Model.Persistence;
 
 namespace TouchRemote.UI
 {
@@ -35,6 +39,8 @@ namespace TouchRemote.UI
 
         private ContentPresenter movingItem;
         private Point startPoint;
+
+        private IconManager _IconManager;
 
         #endregion
 
@@ -104,6 +110,10 @@ namespace TouchRemote.UI
 
         public ICommand AddToggleButtonCommand { get; private set; }
 
+        public ICommand AddBoundToggleButtonCommand { get; private set; }
+
+        public ICommand AddSliderCommand { get; private set; }
+
         public ICommand OpenPropertiesCommand { get; private set; }
 
         public ICommand RemoveButtonCommand { get; private set; }
@@ -112,21 +122,27 @@ namespace TouchRemote.UI
 
         public ICommand OpenUriCommand { get; private set; }
 
+        public ICommand OpenPluginsDirectoryCommand { get; private set; }
+
         #endregion
 
-        public OptionsWindow(RemoteControlService remoteControlService, PluginManager pluginManager, WebServer webServer, Action shutdownCallback)
+        public OptionsWindow(RemoteControlService remoteControlService, PluginManager pluginManager, IconManager iconManager, WebServer webServer, Action shutdownCallback)
         {
             RemoteControlService = remoteControlService;
             PluginManager = pluginManager;
+            _IconManager = iconManager;
             WebServer = webServer;
             Interfaces = new ObservableCollection<InterfaceModel>();
             ToggleErrorDetails = new DelegateCommand(() => ErrorDetailsVisible = !ErrorDetailsVisible);
             AddButtonCommand = new DelegateCommand(AddButton);
             AddToggleButtonCommand = new DelegateCommand(AddToggleButton);
-            OpenPropertiesCommand = new DelegateCommand<Element>(ShowButtonProperties);
-            RemoveButtonCommand = new DelegateCommand<Element>(RemoveElement);
+            AddBoundToggleButtonCommand = new DelegateCommand(AddBoundToggleButton);
+            AddSliderCommand = new DelegateCommand(AddSlider);
+            OpenPropertiesCommand = new DelegateCommand<RemoteElement>(ShowButtonProperties);
+            RemoveButtonCommand = new DelegateCommand<RemoteElement>(RemoveElement);
             ShutdownCommand = new DelegateCommand(shutdownCallback);
             OpenUriCommand = new DelegateCommand<Uri>(OpenUri);
+            OpenPluginsDirectoryCommand = new DelegateCommand(OpenPluginsDirectory);
 
             InitializeComponent();
 
@@ -165,38 +181,91 @@ namespace TouchRemote.UI
         {
             var pt = contextMenuOpenedHere;
             if (pt == null) pt = new Point(0, 0);
-            RemoteControlService.AddElement(new Model.Button { Id = RemoteControlService.CreateId(), Icon = FontAwesome.WPF.FontAwesomeIcon.Square, Label = "New Button", X = (int)Math.Round(pt.X), Y = (int)Math.Round(pt.Y) });
+            RemoteControlService.AddElement(new RemoteButton {
+                Id = RemoteControlService.CreateId(),
+                Label = "New Button",
+                Icon = new IconHolder()
+                {
+                    Name = "Builtin: PlusSquareOutline",
+                    Source = BuiltinIconSource.Create(FontAwesomeIcon.PlusSquareOutline, Colors.Black)
+                },
+                X = pt.X,
+                Y = pt.Y,
+                ZIndex = RemoteControlService.Count + 1
+            });
         }
 
         private void AddToggleButton()
         {
             var pt = contextMenuOpenedHere;
             if (pt == null) pt = new Point(0, 0);
-            RemoteControlService.AddElement(new ToggleButton { Id = RemoteControlService.CreateId(), IconOff = FontAwesome.WPF.FontAwesomeIcon.ToggleOff, IconOn = FontAwesome.WPF.FontAwesomeIcon.ToggleOn, LabelOff = "New Toggle Button", LabelOn = "New Toggle Button", X = (int)Math.Round(pt.X), Y = (int)Math.Round(pt.Y) });
+            RemoteControlService.AddElement(new RemoteToggleButton {
+                Id = RemoteControlService.CreateId(),
+                LabelOff = "New Toggle Button",
+                LabelOn = "New Toggle Button",
+                IconOff = new IconHolder()
+                {
+                    Name = "Builtin: ToggleOff",
+                    Source = BuiltinIconSource.Create(FontAwesomeIcon.ToggleOff, Colors.Black)
+                },
+                IconOn = new IconHolder()
+                {
+                    Name = "Builtin: ToggleOn",
+                    Source = BuiltinIconSource.Create(FontAwesomeIcon.ToggleOn, Colors.Black)
+                },
+                X = pt.X,
+                Y = pt.Y,
+                ZIndex = RemoteControlService.Count + 1
+            });
         }
 
-        private void ShowButtonProperties(Element element)
+        private void AddBoundToggleButton()
         {
-            Window properties;
-            if (element is ToggleButton)
-            {
-                properties = new ToggleButtonProperties(PluginManager, element as ToggleButton);
-            }
-            else if (element is Model.Button)
-            {
-                properties = new ButtonProperties(PluginManager, element as Model.Button);
-            }
-            else
-            {
-                return;
-            }
+            var pt = contextMenuOpenedHere;
+            if (pt == null) pt = new Point(0, 0);
+            RemoteControlService.AddElement(new RemoteBoundToggleButton {
+                Id = RemoteControlService.CreateId(),
+                LabelOff = "New Bound Toggle Button",
+                LabelOn = "New Bound Toggle Button",
+                IconOff = new IconHolder()
+                {
+                    Name = "Builtin: ToggleOff",
+                    Source = BuiltinIconSource.Create(FontAwesomeIcon.ToggleOff, Colors.Black)
+                },
+                IconOn = new IconHolder()
+                {
+                    Name = "Builtin: ToggleOn",
+                    Source = BuiltinIconSource.Create(FontAwesomeIcon.ToggleOn, Colors.Black)
+                },
+                X = pt.X,
+                Y = pt.Y,
+                ZIndex = RemoteControlService.Count + 1
+            });
+        }
+
+        private void AddSlider()
+        {
+            var pt = contextMenuOpenedHere;
+            if (pt == null) pt = new Point(0, 0);
+            RemoteControlService.AddElement(new RemoteSlider {
+                Id = RemoteControlService.CreateId(),
+                Label = "New Slider",
+                X = pt.X,
+                Y = pt.Y,
+                ZIndex = RemoteControlService.Count + 1
+            });
+        }
+
+        private void ShowButtonProperties(RemoteElement element)
+        {
+            Window properties = new ControlProperties(PluginManager, _IconManager, element);
             properties.Owner = this;
             properties.ShowDialog();
         }
 
-        private void RemoveElement(Element element)
+        private void RemoveElement(RemoteElement element)
         {
-            RemoteControlService.RemoveElement(element);
+            RemoteControlService.RemoveElement(element.Id);
         }
 
         private void UpdateListenAddresses(InterfaceModel model)
@@ -223,6 +292,18 @@ namespace TouchRemote.UI
             }
         }
 
+        private void OpenPluginsDirectory()
+        {
+            try
+            {
+                Process.Start(PluginManager.PluginsDirectory);
+            }
+            catch (Exception)
+            {
+                // Ignore
+            }
+        }
+
         private void ItemsControl_PreviewMouseRightButtonDown(object sender, MouseButtonEventArgs e)
         {
             var itemsControl = sender as ItemsControl;
@@ -238,12 +319,14 @@ namespace TouchRemote.UI
 
             movingItem = item;
 
-            // Obliterate Z-index for all children so the dragging item is on top
+            // Reset Z-index for all children so the dragging item is on top
+            int itemZIndex = Panel.GetZIndex(item);
             foreach (UIElement child in canvas.Children)
             {
-                Panel.SetZIndex(child, 1);
+                int childZIndex = Panel.GetZIndex(child);
+                if (childZIndex > itemZIndex) Panel.SetZIndex(child, childZIndex - 1);
             }
-            Panel.SetZIndex(item, 2);
+            Panel.SetZIndex(item, canvas.Children.Count);
 
             Mouse.Capture(item);
         }
@@ -277,62 +360,8 @@ namespace TouchRemote.UI
 
         private void item_PreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
-            var item = sender as ContentPresenter;
-            var canvas = item.FindAncestor<Canvas>();
-
             movingItem = null;
-
-            // Obliterate Z-index for all children so the dragging item is on top
-            foreach (UIElement child in canvas.Children)
-            {
-                Panel.SetZIndex(child, 1);
-            }
-            Panel.SetZIndex(item, 2);
-
             Mouse.Capture(null);
-        }
-
-        #endregion
-
-        #region Model classes
-
-        public class InterfaceModel
-        {
-            public string Name { get; private set; }
-            public bool UnknownInterface { get; private set; }
-            public IPAddress Address { get; private set; }
-            public event Action<InterfaceModel> CheckedChanged;
-
-            private bool _Checked;
-            public bool Checked
-            {
-                get
-                {
-                    return _Checked;
-                }
-                set
-                {
-                    _Checked = value;
-                    CheckedChanged?.Invoke(this);
-                }
-            }
-
-            public InterfaceModel(string name, IPAddress addr, bool check, bool unknownInterface, Action<InterfaceModel> changeCallback)
-            {
-                Name = name;
-                Address = addr;
-                _Checked = check;
-                UnknownInterface = unknownInterface;
-                CheckedChanged += changeCallback;
-            }
-
-            public string Label
-            {
-                get
-                {
-                    return string.Format("{0} ({1})", Name, Address);
-                }
-            }
         }
 
         #endregion

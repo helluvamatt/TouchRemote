@@ -10,24 +10,81 @@
 
     .controls .control {
         position: absolute;
-    }
-
-    .controls  .control.btn {
-        padding: 16px;
         min-height: 108px;
         min-width: 108px;
-        max-width: 108px;
     }
 
-        .controls .control.btn .icon {
-            font-size: 48px;
-        }
-
-        .controls .control.btn .lbl {
+        .controls .control .lbl {
             overflow-wrap: break-word;
             -ms-word-wrap: break-word;
             word-wrap: break-word;
+            white-space: normal;
         }
+
+    .controls .control.btn {
+        padding: 16px;
+        max-width: 108px;
+    }
+
+        .controls .control.btn .icn > img {
+            height: 48px;
+            width: 48px;
+        }
+
+    .controls .control.slider {
+        display: flex;
+        -ms-flex-direction: column;
+        -webkit-flex-direction: column;
+        flex-direction: column;
+        align-items: center;
+        padding: 6px 12px;
+        margin-bottom: 0;
+        font-size: 14px;
+        font-weight: 400;
+        line-height: 1.42857143;
+        text-align: center;
+        white-space: nowrap;
+        vertical-align: middle;
+        -ms-touch-action: manipulation;
+        touch-action: manipulation;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+        background-image: none;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        color: #333;
+        background-color: #fff;
+    }
+
+        .controls .control.slider .slider-wrapper {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            flex-grow: 1;
+            padding: 0;
+            width: 200px;
+            height: 20px;
+        }
+            .controls .control.slider .slider-wrapper input[type="range"] {
+                margin: 0;
+                width: 200px;
+                height: 20px;
+            }
+
+            .controls .control.slider .slider-wrapper.vertical {
+                width: 20px;
+                height: 200px;
+                display: block;
+            }
+
+                .controls .control.slider .slider-wrapper.vertical input[type="range"] {
+                    width: 200px;
+                    height: 20px;
+                    transform-origin: 100px 100px;
+                    transform: rotate(-90deg);
+                }
 
 .shade {
     position: fixed;
@@ -35,6 +92,7 @@
     left: 0;
     bottom: 0;
     right: 0;
+    z-index: 1000000;
     background-color: rgba(0, 0, 0, 0.7);
 }
 

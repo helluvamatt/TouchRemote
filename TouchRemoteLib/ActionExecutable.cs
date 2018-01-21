@@ -27,15 +27,18 @@ namespace TouchRemote.Lib
     /// <summary>
     /// Allows plugins to provide a dynamic list of ActionExecutable implementations
     /// </summary>
+    /// <remarks>
+    /// Implementations are shared as singletons inside the application
+    /// </remarks>
     /// <example>
     /// A plugin could implement an ActionExecutable that activates (restores) a window, and a provider that returns a list of actions corresponding to the currently opened windows.
     /// </example>
-    public interface ActionExecutableProvider
+    public interface ActionExecutableProvider : IProvider<ProvidedActionExecutable>
     {
         /// <summary>
         /// Create a list of provided implementations
         /// </summary>
         /// <returns>List of provided implementations</returns>
-        IEnumerable<ActionExecutable> GetActions();
+        IEnumerable<ProvidedActionExecutable> GetActions();
     }
 }

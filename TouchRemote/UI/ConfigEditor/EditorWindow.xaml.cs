@@ -43,11 +43,8 @@ namespace TouchRemote.UI.ConfigEditor
 
         #endregion
 
-        private Action _PropertyChangeCallback;
-
-        public EditorWindow(object action, Action propertyChangedCallback)
+        public EditorWindow(object action)
         {
-            _PropertyChangeCallback = propertyChangedCallback;
             var configPropCollection = ConfigPropertyCollection.FromObject(action);
             InitializeComponent();
             foreach (var configProp in configPropCollection)
@@ -61,11 +58,6 @@ namespace TouchRemote.UI.ConfigEditor
                 _PropertyGrid.PropertyDefinitions.Add(def);
             }
             SelectedObject = action;
-        }
-
-        private void PropertyGrid_PropertyValueChanged(object sender, Xceed.Wpf.Toolkit.PropertyGrid.PropertyValueChangedEventArgs e)
-        {
-            _PropertyChangeCallback.Invoke();
         }
     }
 }

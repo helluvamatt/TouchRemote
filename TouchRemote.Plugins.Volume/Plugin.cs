@@ -4,10 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace TouchRemote.Model
+namespace TouchRemote.Plugins.Volume
 {
-    public enum ListenAddressMode
+    class Plugin
     {
-        LOCAL_ONLY, ANY, CUSTOM
     }
 }

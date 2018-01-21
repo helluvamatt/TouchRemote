@@ -4,10 +4,12 @@
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Touch Remote</title>
+    <link rel="shortcut icon" href="~/favicon.ico" type="image/x-icon" />
+    <link rel="icon" href="~/favicon.ico" type="image/x-icon" />
     <link rel="stylesheet" href="~/assets/css/font-awesome.min.css" />
     <link rel="stylesheet" href="~/assets/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/assets/css/app.css" />
+    <title>Touch Remote</title>
 </head>
 <body>
     <div id="app" class="container-fluid">
@@ -47,9 +49,17 @@
             </div>
         </div>
     </script>
+    <script type="text/x-template" id="tpl_slider">
+        <div class="control slider" v-bind:style="{top: Y + 'px', left: X + 'px', zIndex: ZIndex * 10}">
+            <div v-bind:class="['slider-wrapper', Properties.Orientation]">
+                <input type="range" min="0" max="1" step="0.01" v-bind:value="Properties.Value" v-on:input="valueChanged" />
+            </div>
+            <div class="lbl">{{ Properties.Label }}</div>
+        </div>
+    </script>
     <script type="text/x-template" id="tpl_button">
-        <button type="button" class="btn btn-default control" v-bind:style="{top: Y + 'px', left: X + 'px'}" @click="emitClicked">
-            <div><i v-bind:class="'fa fa-3x fa-' + Properties.IconClass"></i></div>
+        <button type="button" class="btn btn-default control" v-bind:style="{top: Y + 'px', left: X + 'px', zIndex: ZIndex * 10}" @click="emitClicked">
+            <div class="icn"><img v-bind:src="Properties.IconData" alt="icon" /></div>
             <div class="lbl">{{ Properties.Label }}</div>
         </button>
     </script>
@@ -73,6 +83,7 @@
             </div>
         </div>
     </script>
+    <script type="text/javascript" src="~/assets/js/lodash.throttle.js"></script>
     <script type="text/javascript" src="~/assets/js/jquery.js"></script>
     <script type="text/javascript" src="~/assets/js/jquery.signalR-2.2.2.js"></script>
     <script type="text/javascript" src="~/signalr/hubs"></script>

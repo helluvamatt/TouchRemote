@@ -1,16 +1,26 @@
 ﻿using System;
+using TouchRemote.Lib;
 
 namespace TouchRemote.Model.Impl
 {
-    internal class ActionExecutableDescriptor : IActionExecutableDescriptor
+    internal class ImplDescriptor : IImplDescriptor
     {
-        public ActionExecutableDescriptor(IActionExecutableDescriptor other)
+        public ImplDescriptor(IImplDescriptor other)
         {
             Name = other.Name;
             Description = other.Description;
             Type = other.Type;
             Plugin = other.Plugin;
             Manager = other.Manager;
+        }
+
+        public ImplDescriptor(PluginManager pluginManager, PluginDescriptor plugin, IProvided provided)
+        {
+            Manager = pluginManager;
+            Plugin = plugin;
+            Name = provided.Name;
+            Description = provided.Description;
+            Type = provided.GetType();
         }
 
         public string Name { get; private set; }
@@ -25,7 +35,7 @@ namespace TouchRemote.Model.Impl
 
         public override bool Equals(object obj)
         {
-            var other = obj as ActionExecutableDescriptor;
+            var other = obj as ImplDescriptor;
             return other != null && other.Type.FullName == Type.FullName;
         }
 

@@ -22,6 +22,7 @@ using System.Threading;
 using Microsoft.Owin.Builder;
 using Microsoft.AspNet.SignalR;
 using TouchRemote.Web.Hubs;
+using TouchRemote.Model.Impl;
 
 namespace TouchRemote
 {

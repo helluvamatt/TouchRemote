@@ -1,18 +1,29 @@
-﻿using System;
+﻿using NAudio.CoreAudioApi;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TouchRemote.Lib;
 
 namespace TouchRemote.Plugins.Volume
 {
-    public class VolumeBoundPropertyProvider : BoundPropertyProvider<VolumeBoundProperty, int>
+    public class VolumeBoundPropertyProvider : FloatBoundPropertyProvider
     {
-        public IEnumerable<VolumeBoundProperty> GetProperties()
+        static VolumeBoundPropertyProvider()
         {
-            // TODO
-            throw new NotImplementedException();
+            CosturaUtility.Initialize();
+        }
+
+        public ProvidedFloatBoundProperty EmptyInstance
+        {
+            get
+            {
+                var device = new MMDeviceEnumerator().GetDefaultAudioEndpoint(DataFlow.Render, Role.Console);
+                return new VolumeBoundProperty(device);
+            }
+        }
+
+        public IEnumerable<ProvidedFloatBoundProperty> GetProperties()
+        {
+            return new MMDeviceEnumerator().EnumerateAudioEndPoints(DataFlow.Render, DeviceState.Active).Select(wasapi => new VolumeBoundProperty(wasapi));
         }
     }
 }

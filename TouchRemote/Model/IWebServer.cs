@@ -14,4 +14,9 @@ namespace TouchRemote.Model
 
         IEnumerable<Connection> Connections { get; }
     }
+
+    public enum ListenAddressMode
+    {
+        LOCAL_ONLY, ANY, CUSTOM
+    }
 }

@@ -152,6 +152,7 @@
     <Reference Include="System.Security.Cryptography.X509Certificates, Version=4.1.1.2, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Security.Cryptography.X509Certificates.4.3.2\lib\net461\System.Security.Cryptography.X509Certificates.dll</HintPath>
     </Reference>
+    <Reference Include="System.Windows" />
     <Reference Include="System.Windows.Interactivity, Version=4.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\MahApps.Metro.1.5.0\lib\net45\System.Windows.Interactivity.dll</HintPath>
     </Reference>
@@ -173,17 +174,42 @@
     <Compile Include="Actions\KeyPressAction.cs" />
     <Compile Include="Actions\ProcessStartAction.cs" />
     <Compile Include="AppContext.cs" />
+    <Compile Include="Model\Persistence\Controls\Icons.cs" />
+    <Compile Include="Model\Persistence\Controls\ImplInstance.cs" />
+    <Compile Include="Model\Persistence\Controls\RemoteBoundToggleButton.cs" />
+    <Compile Include="Model\Persistence\Controls\RemoteButton.cs" />
+    <Compile Include="Model\Persistence\Controls\RemoteButtonBase.cs" />
+    <Compile Include="Model\Persistence\Controls\RemoteControls.cs" />
+    <Compile Include="Model\Persistence\Controls\RemoteElement.cs" />
+    <Compile Include="Model\Persistence\Controls\RemoteSlider.cs" />
+    <Compile Include="Model\Persistence\Controls\RemoteToggleButton.cs" />
+    <Compile Include="Model\Persistence\Controls\RemoteToggleButtonBase.cs" />
+    <Compile Include="Model\Persistence\Controls\StringBoundPropertyInstance.cs" />
+    <Compile Include="Model\Persistence\Controls\BooleanBoundPropertyInstance.cs" />
+    <Compile Include="Model\Persistence\Controls\FloatBoundPropertyInstance.cs" />
     <Compile Include="Model\Connection.cs" />
-    <Compile Include="Model\Element.cs" />
-    <Compile Include="Model\Impl\ActionExecutableDescriptor.cs" />
+    <Compile Include="Model\Persistence\Controls\ActionExecutableInstance.cs" />
+    <Compile Include="Model\Impl\BoundPropertyWatcher.cs" />
+    <Compile Include="Model\Impl\ImplDescriptor.cs" />
+    <Compile Include="Model\Impl\ProvidedImplDescriptor.cs" />
     <Compile Include="Model\IRemoteControlService.cs" />
     <Compile Include="Model\IWebServer.cs" />
-    <Compile Include="Model\Persistence\Buttons.cs">
-      <DependentUpon>Buttons.xsd</DependentUpon>
-    </Compile>
-    <Compile Include="Model\IActionExecutableDescriptor.cs" />
+    <Compile Include="Model\IImplDescriptor.cs" />
+    <Compile Include="Model\Persistence\IconManager.cs" />
+    <Compile Include="Model\Persistence\InflateResult.cs" />
     <Compile Include="Model\Persistence\PersistenceManager.cs" />
+    <Compile Include="Model\InterfaceModel.cs" />
+    <Compile Include="UI\ControlProperties.xaml.cs">
+      <DependentUpon>ControlProperties.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="UI\IconPicker\PickerWindow.xaml.cs">
+      <DependentUpon>PickerWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Utils\ByteArrayUtils.cs" />
     <Compile Include="Utils\Converters\EnumValuesConverter.cs" />
+    <Compile Include="Utils\Converters\StringIsNullOrEmptyToVisibilityConverter.cs" />
+    <Compile Include="Utils\ElementTypeDataTemplateSelector.cs" />
+    <Compile Include="Utils\MathUtils.cs" />
     <Compile Include="Utils\PresentationUtils.cs" />
     <Compile Include="Web\Hubs\RemoteHub.cs" />
     <Compile Include="Web\Models\AuthResponse.cs" />
@@ -191,15 +217,9 @@
     <Compile Include="Web\Models\ClickResponse.cs" />
     <Compile Include="Web\Models\TokenPayload.cs" />
     <Compile Include="Web\Models\WebControl.cs" />
-    <Compile Include="UI\ButtonProperties.xaml.cs">
-      <DependentUpon>ButtonProperties.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Model\Button.cs" />
-    <Compile Include="Model\ListenAddressMode.cs" />
     <Compile Include="Model\PluginDescriptor.cs" />
     <Compile Include="Model\PluginManager.cs" />
-    <Compile Include="Model\RemoteControlService.cs" />
-    <Compile Include="Model\ToggleButton.cs" />
+    <Compile Include="Model\Impl\RemoteControlService.cs" />
     <Compile Include="UI\ConfigEditor\EditorWindow.xaml.cs">
       <DependentUpon>EditorWindow.xaml</DependentUpon>
     </Compile>
@@ -214,9 +234,6 @@
       <AutoGen>True</AutoGen>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
       <DependentUpon>Settings.settings</DependentUpon>
-    </Compile>
-    <Compile Include="UI\ToggleButtonProperties.xaml.cs">
-      <DependentUpon>ToggleButtonProperties.xaml</DependentUpon>
     </Compile>
     <Compile Include="UI\TrayIconPopup.xaml.cs">
       <DependentUpon>TrayIconPopup.xaml</DependentUpon>
@@ -257,7 +274,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
-    <EmbeddedResource Include="Model\Persistence\Buttons.xsd">
+    <EmbeddedResource Include="Model\Persistence\Controls.xsd">
       <SubType>Designer</SubType>
     </EmbeddedResource>
     <None Include="packages.config" />
@@ -265,11 +282,6 @@
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
-    <EmbeddedResource Include="Web\Assets\fonts\fontawesome-webfont.eot" />
-    <EmbeddedResource Include="Web\Assets\fonts\fontawesome-webfont.ttf" />
-    <EmbeddedResource Include="Web\Assets\fonts\fontawesome-webfont.woff" />
-    <EmbeddedResource Include="Web\Assets\fonts\fontawesome-webfont.woff2" />
-    <EmbeddedResource Include="Web\Assets\fonts\FontAwesome.otf" />
     <EmbeddedResource Include="Web\Assets\fonts\glyphicons-halflings-regular.eot" />
     <EmbeddedResource Include="Web\Assets\fonts\glyphicons-halflings-regular.ttf" />
     <EmbeddedResource Include="Web\Assets\fonts\glyphicons-halflings-regular.woff" />
@@ -287,11 +299,11 @@
     <EmbeddedResource Include="Web\Assets\js\app.js" />
   </ItemGroup>
   <ItemGroup>
-    <Page Include="UI\ButtonProperties.xaml">
+    <Page Include="UI\ConfigEditor\EditorWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="UI\ConfigEditor\EditorWindow.xaml">
+    <Page Include="UI\ControlProperties.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -299,11 +311,11 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="UI\OptionsWindow.xaml">
+    <Page Include="UI\IconPicker\PickerWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="UI\ToggleButtonProperties.xaml">
+    <Page Include="UI\OptionsWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -317,12 +329,6 @@
       <Project>{ff796fb2-29c7-4d05-a583-88fae3afa9f8}</Project>
       <Name>TouchRemoteLib</Name>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Web\Assets\css\font-awesome.min.css" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Web\Assets\fonts\fontawesome-webfont.svg" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Web\Assets\css\app.css" />
@@ -380,6 +386,12 @@
     <Content Include="..\x64\Debug\TouchRemoteNative.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="BoundProperties\" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Web\Assets\js\lodash.throttle.js" />
   </ItemGroup>
   <Import Project="..\packages\NETStandard.Library.2.0.1\build\netstandard2.0\NETStandard.Library.targets" Condition="Exists('..\packages\NETStandard.Library.2.0.1\build\netstandard2.0\NETStandard.Library.targets')" />
 </Project>

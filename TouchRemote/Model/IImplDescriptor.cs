@@ -1,12 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace TouchRemote.Model
 {
-    public interface IActionExecutableDescriptor
+    public interface IImplDescriptor
     {
         string Name { get; }
 

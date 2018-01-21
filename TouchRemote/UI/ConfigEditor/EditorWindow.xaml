@@ -23,7 +23,7 @@
     <ma:MetroWindow.Resources>
         <uc:EnumValuesConverter x:Key="enumValuesConverter" />
     </ma:MetroWindow.Resources>
-    <xctk:PropertyGrid x:Name="_PropertyGrid" SelectedObject="{Binding SelectedObject}" PropertyValueChanged="PropertyGrid_PropertyValueChanged" ShowSortOptions="False" ShowSearchBox="False" ShowTitle="False" IsMiscCategoryLabelHidden="True" AutoGenerateProperties="False">
+    <xctk:PropertyGrid x:Name="_PropertyGrid" SelectedObject="{Binding SelectedObject}" ShowSortOptions="False" ShowSearchBox="False" ShowTitle="False" IsMiscCategoryLabelHidden="True" AutoGenerateProperties="False">
         <xctk:PropertyGrid.EditorDefinitions>
             <xctk:EditorTemplateDefinition>
                 <xctk:EditorTemplateDefinition.TargetProperties>

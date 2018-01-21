@@ -5,14 +5,16 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("TouchRemote.Plugins.Volume")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyTitle("DirectSound Volume")]
+[assembly: AssemblyDescription("TouchRemote plugin to control the volume for DirectSound devices")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("TouchRemote.Plugins.Volume")]
-[assembly: AssemblyCopyright("Copyright ©  2018")]
+[assembly: AssemblyCompany("SCHNEENET")]
+[assembly: AssemblyProduct("DirectSound Volume")]
+[assembly: AssemblyCopyright("Copyright © Matt Schneeberger 2018")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
+
+[assembly: TouchRemote.Lib.Attributes.PluginIcon("volume-up")]
 
 // Setting ComVisible to false makes the types in this assembly not visible
 // to COM components.  If you need to access a type in this assembly from
