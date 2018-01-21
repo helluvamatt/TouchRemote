@@ -14,7 +14,5 @@ namespace TouchRemote.Model
         IEnumerable<WebControl> ControlList { get; }
 
         WebControl GetControl(Guid guid);
-
-        string GetRequiredPassword();
     }
 }

@@ -1,4 +1,18 @@
-﻿const EventBus = new Vue();
+﻿const Enum = {
+    hasFlag: function (value, flags) {
+        return (value & flags) === flags;
+    }
+};
+
+const AuthState = {
+    Authenticated: 0,
+    NoPassword: 1,
+    ExceedsMaxConnections: 2,
+    IPNotAllowed: 4,
+    InvalidConnection: 8
+};
+
+const EventBus = new Vue();
 
 const UnknownControl = Vue.component('Unknown', {
     template: ''
@@ -81,34 +95,18 @@ const Controls = Vue.component('controls', {
 
 const Login = Vue.component('login', {
     template: '#tpl_login',
+    props: ['authError'],
     data: function () {
         return {
             password: '',
-            error: null
+            error: this.authError
         };
     },
     methods: {
         doLogin: function () {
-            var $this = this;
-            $.ajax({
-                method: 'POST',
-                url: '/login',
-                data: {
-                    password: $this.password
-                },
-                success: function (data, status, jqXHR) {
-                    EventBus.$emit('login-success', data.tokenValue);
-                    $this.$router.replace('/');
-                },
-                error: function (jqXHR, textStatus, errorThrown) {
-                    if (textStatus === "error" && jqXHR.status === 401) {
-                        $this.error = "Password is incorrect.";
-                    } else if (textStatus === "error" && jqXHR.status === 403) {
-                        $this.$router.replace('/');
-                    } else {
-                        $this.error = "Unable to connect to server. Make sure TouchRemote is running.";
-                    }
-                }
+            var $vm = this;
+            EventBus.$emit('login', this.password, function (errorMessage) {
+                $vm.error = errorMessage;
             });
         }
     }
@@ -134,6 +132,7 @@ var vm = new Vue({
         reconnecting: false,
         hubConnected: false,
         resizeHandler: null,
+        authError: null
     },
     created: function () {
         var $vm = this;
@@ -145,8 +144,12 @@ var vm = new Vue({
                 var width = document.documentElement.clientWidth;
                 var height = document.documentElement.clientHeight;
                 remoteHub.server.setClientSize($vm.token, width, height).done(function (result) {
-                    if (!result.IsValid) {
-                        this.$router.replace('/login');
+                    if (result.AuthState != AuthState.Authenticated) {
+                        if (Enum.hasFlag(result.AuthState, AuthState.ExceedsMaxConnections) || Enum.hasFlag(result.AuthState, AuthState.IPNotAllowed))
+                            $vm.authError = "You are not allowed to connect at this time.";
+                        else
+                            $vm.authError = "Please login.";
+                        $vm.$router.replace('/login');
                     }
                 });
             }
@@ -157,9 +160,13 @@ var vm = new Vue({
         var getControls = function () {
             if ($vm.hubConnected) {
                 remoteHub.server.getControls($vm.token).done(function (result) {
-                    if (result.IsValid) {
+                    if (result.AuthState == AuthState.Authenticated) {
                         EventBus.$emit('controls-changed', result.Data);
                     } else {
+                        if (Enum.hasFlag(result.AuthState, AuthState.ExceedsMaxConnections) || Enum.hasFlag(result.AuthState, AuthState.IPNotAllowed))
+                            $vm.authError = "You are not allowed to connect at this time.";
+                        else
+                            $vm.authError = "Please login.";
                         $vm.$router.replace('/login');
                     }
                 });
@@ -187,25 +194,42 @@ var vm = new Vue({
             $vm.error = "Something went wrong. Try restarting TouchRemote.";
         });
 
-        // Event from Login module: we are logged in an have a token
-        EventBus.$on('login-success', function (token) {
-            $vm.token = token;
-        });
-
         // Event from Controls module: control collection requested, expecting "controls-changed" event to be fired
         EventBus.$on('controls-requested', function () {
             getControls();
+        });
+
+        // Event from Login module: login requested to be performed over SignalR
+        EventBus.$on('login', function (password, errorCallback) {
+            if ($vm.hubConnected) {
+                remoteHub.server.login(password).done(function (result) {
+                    if (result.AuthState == AuthState.Authenticated) {
+                        // result.Data is the token
+                        $vm.token = result.Data;
+                        $vm.$router.replace('/');
+                    } else {
+                        if (Enum.hasFlag(result.AuthState, AuthState.NoPassword))
+                            errorCallback("Password is incorrect.");
+                        else
+                            errorCallback("You are not allowed to connect at this time.")
+                    }
+                });
+            }
         });
 
         // Event from Controls module: control event fired to be sent to server, rate limited to 10 Hz
         var sendControlEvent = throttle(function (id, name, data) {
             if ($vm.hubConnected) {
                 remoteHub.server.processEvent($vm.token, id, name, data).done(function (result) {
-                    if (result.IsValid) {
+                    if (result.AuthState == AuthState.Authenticated) {
                         if (!result.Data) {
                             getControls();
                         }
                     } else {
+                        if (Enum.hasFlag(result.AuthState, AuthState.ExceedsMaxConnections) || Enum.hasFlag(result.AuthState, AuthState.IPNotAllowed))
+                            $vm.authError = "You are not allowed to connect at this time.";
+                        else
+                            $vm.authError = "Please login.";
                         $vm.$router.replace('/login');
                     }
                 });

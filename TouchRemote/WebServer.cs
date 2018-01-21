@@ -6,10 +6,9 @@ using SuaveHttp = Suave.Http;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Linq;
 using System.Net;
-using System.Reflection;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using TouchRemote.Model;
@@ -23,39 +22,43 @@ using Microsoft.Owin.Builder;
 using Microsoft.AspNet.SignalR;
 using TouchRemote.Web.Hubs;
 using TouchRemote.Model.Impl;
+using TouchRemote.Properties;
+using JWT;
+using JWT.Algorithms;
+using JWT.Serializers;
+using TouchRemote.Web.Models;
 
 namespace TouchRemote
 {
-    internal class WebServer : DependencyObject, IWebServer, IDisposable
+    internal class WebServer : IWebServer, INotifyPropertyChanged, IDisposable
     {
         #region Dependency properties
 
         #region Status
 
-        public static readonly DependencyProperty StatusProperty = DependencyProperty.Register("Status", typeof(ServerStatus), typeof(WebServer));
-        public static readonly DependencyProperty ErrorProperty = DependencyProperty.Register("Error", typeof(Exception), typeof(WebServer));
-
+        private ServerStatus _Status;
         public ServerStatus Status
         {
             get
             {
-                return (ServerStatus)GetValue(StatusProperty);
+                return _Status;
             }
             set
             {
-                SetValue(StatusProperty, value);
+                PropertyChanged.ChangeAndNotify(ref _Status, value, () => Status);
             }
         }
 
+        private Exception _Error;
         public Exception Error
         {
             get
             {
-                return (Exception)GetValue(ErrorProperty);
+                return _Error;
             }
             set
             {
-                SetValue(ErrorProperty, value);
+                PropertyChanged.ChangeAndNotify(ref _Error, value, () => Error);
             }
         }
 
@@ -83,16 +86,32 @@ namespace TouchRemote
 
         private IPEndPoint[] _ListenAddresses;
 
+        private readonly IJwtEncoder _JwtEncoder;
+        private readonly IJwtDecoder _JwtDecoder;
+        private readonly string _SecretKey;
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
         public WebServer(RemoteControlService service, IPEndPoint[] listenAddresses)
         {
             Status = ServerStatus.Starting;
             _Log = LogManager.GetLogger(GetType());
             _RemoteControlService = service;
             _CancellationTokenSource = new CancellationTokenSource();
+
+            var jsonSerializer = new JsonNetSerializer();
+            var base64Encoder = new JwtBase64UrlEncoder();
+            _JwtEncoder = new JwtEncoder(new HMACSHA512Algorithm(), jsonSerializer, base64Encoder);
+            _JwtDecoder = new JwtDecoder(jsonSerializer, new JwtValidator(jsonSerializer, new UtcDateTimeProvider()), base64Encoder);
+            byte[] keyBytes = new byte[1024];
+            new Random().NextBytes(keyBytes);
+            _SecretKey = BitConverter.ToString(keyBytes).Replace("-", "");
+
             // TODO Build optional SSL support with certificates
             string scheme = "http";
             ListenAddresses = new ObservableCollection<Uri>(listenAddresses.Select(ep => new UriBuilder(scheme, ep.AddressFamily == System.Net.Sockets.AddressFamily.InterNetworkV6 ? ("[" + ep.Address.ToString() + "]") : ep.Address.ToString(), ep.Port).Uri));
             _ListenAddresses = listenAddresses;
+
             Clients = new ObservableCollection<Connection>();
         }
 
@@ -116,15 +135,17 @@ namespace TouchRemote
                 var app = Suave.Owin.OwinAppModule.OfAppFunc("", owin);
                 var startAction = SuaveWeb.startWebServerAsync(suaveConfig, app);
                 FSharpAsync.Start(startAction.Item2, FSharpOption<CancellationToken>.Some(_CancellationTokenSource.Token));
-                FSharpAsync.StartAsTask(startAction.Item1, FSharpOption<TaskCreationOptions>.Some(TaskCreationOptions.None), FSharpOption<CancellationToken>.None).ContinueWith((started) => {
+                FSharpAsync.StartAsTask(startAction.Item1, FSharpOption<TaskCreationOptions>.Some(TaskCreationOptions.None), FSharpOption<CancellationToken>.None).ContinueWith((started) =>
+                {
                     _Log.Info("WebServer is running.");
-                    this.Invoke(() => Status = ServerStatus.Ready);
+                    Status = ServerStatus.Ready;
                 });
             }
             catch (Exception ex)
             {
                 _Log.Error(string.Format("Failed to start web server: {0}", ex.Message), ex);
-                this.Invoke(() => Status = ServerStatus.Stopped);
+                Status = ServerStatus.Stopped;
+                Error = ex;
             }
         }
 
@@ -133,51 +154,143 @@ namespace TouchRemote
             _CancellationTokenSource.Cancel();
         }
 
-        public enum ServerStatus
+        private void InvokeAsync(Action callback)
         {
-            Stopped, Starting, Ready
+            if (!Application.Current.Dispatcher.HasShutdownStarted)
+            {
+                Application.Current.Dispatcher.InvokeAsync(callback);
+            }
         }
 
         #region IWebServer implementation
 
         public void RegisterConnection(Connection connection)
         {
-            this.Invoke(() => Clients.Add(connection));
+            if (Settings.Default.MaxSessions > 0 && Clients.Count + 1 > Settings.Default.MaxSessions)
+            {
+                connection.AuthState |= AuthState.ExceedsMaxConnections;
+            }
+
+            // TODO Set other authentication types, eg. IP address in whitelist (some parameters may need to be passed in from the hub context
+
+            InvokeAsync(() => Clients.Add(connection));
         }
 
         public void UnregisterConnection(string connectionId)
         {
-            this.Invoke(() => {
-                var conn = Clients.FirstOrDefault(c => c.Id == connectionId);
-                if (conn != null)
+            var conn = Clients.FirstOrDefault(c => c.Id == connectionId);
+            if (conn != null)
+            {
+                InvokeAsync(() => Clients.Remove(conn));
+            }
+        }
+
+        public string CreateToken(string password)
+        {
+            return _JwtEncoder.Encode(TokenPayload.WithKey(password), _SecretKey);
+        }
+
+        public AuthState Login(string connectionId, string token)
+        {
+            var conn = Clients.FirstOrDefault(c => c.Id == connectionId);
+            if (conn == null)
+            {
+                return AuthState.InvalidConnection;
+            }
+
+            AuthState authState = AuthState.Authenticated;
+
+            // Check password
+            string requiredPassword = Settings.Default.RequiredPassword;
+            if (!string.IsNullOrEmpty(requiredPassword))
+            {
+                if (string.IsNullOrEmpty(token))
                 {
-                    Clients.Remove(conn);
+                    authState |= AuthState.NoPassword;
                 }
-            });
+                else
+                {
+                    try
+                    {
+                        var payload = _JwtDecoder.DecodeToObject<TokenPayload>(token);
+                        if (payload.Key != requiredPassword)
+                        {
+                            authState |= AuthState.NoPassword;
+                        }
+                    }
+                    catch (SignatureVerificationException)
+                    {
+                        authState |= AuthState.NoPassword;
+                    }
+                }
+            }
+
+            // Check connection index against max connections
+            if (Settings.Default.MaxSessions > 0 && Clients.IndexOf(conn) > Settings.Default.MaxSessions - 1)
+            {
+                authState |= AuthState.ExceedsMaxConnections;
+            }
+
+            // TODO Check other authentication types, eg. IP address in whitelist (some parameters may need to be passed in from the hub context
+
+            return conn.AuthState = authState;
+        }
+
+        public AuthState CheckAuth(string connectionId, string token)
+        {
+            var conn = Clients.FirstOrDefault(c => c.Id == connectionId);
+            if (conn == null) return AuthState.InvalidConnection;
+
+            AuthState authState = AuthState.Authenticated;
+            string requiredPassword = Settings.Default.RequiredPassword;
+            if (!string.IsNullOrEmpty(requiredPassword))
+            {
+                if (string.IsNullOrEmpty(token))
+                {
+                    authState |= AuthState.NoPassword;
+                }
+                else
+                {
+                    try
+                    {
+                        var payload = _JwtDecoder.DecodeToObject<TokenPayload>(token);
+                        if (payload.Key != requiredPassword)
+                        {
+                            authState |= AuthState.NoPassword;
+                        }
+                    }
+                    catch (SignatureVerificationException)
+                    {
+                        authState |= AuthState.NoPassword;
+                    }
+                }
+            }
+            return authState | conn.AuthState;
         }
 
         public IEnumerable<Connection> Connections
         {
             get
             {
-                return this.Invoke(() => {
-                    return new List<Connection>(Clients);
-                });
+                return new List<Connection>(Clients);
             }
         }
 
         public void SetClientSize(string connectionId, int width, int height)
         {
-            this.Invoke(() => {
-                var conn = Clients.FirstOrDefault(c => c.Id == connectionId);
-                if (conn != null)
-                {
-                    conn.ClientWidth = width;
-                    conn.ClientHeight = height;
-                }
-            });
+            var conn = Clients.FirstOrDefault(c => c.Id == connectionId);
+            if (conn != null)
+            {
+                conn.ClientWidth = width;
+                conn.ClientHeight = height;
+            }
         }
 
         #endregion
+
+        public enum ServerStatus
+        {
+            Stopped, Starting, Ready
+        }
     }
 }

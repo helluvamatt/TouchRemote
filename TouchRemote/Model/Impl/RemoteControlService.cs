@@ -137,20 +137,6 @@ namespace TouchRemote.Model.Impl
             return null;
         }
 
-        public string GetRequiredPassword()
-        {
-            return Settings.Default.RequiredPassword;
-        }
-
-        #endregion
-
-        #region SignalR notifications
-
-        private IClient GetBroadcastContext()
-        {
-            return GlobalHost.ConnectionManager.GetHubContext<RemoteHub, IClient>().Clients.All;
-        }
-
         #endregion
 
         #region Private methods
@@ -162,7 +148,7 @@ namespace TouchRemote.Model.Impl
             if (_RaiseElementsChanged)
             {
                 if (!fromSelf) Save();
-                GetBroadcastContext().RefreshControls();
+                RemoteHub.GetBroadcastContext().RefreshControls();
                 _Watcher.UpdateBoundProperties(Buttons);
                 PropertyChanged.Notify(() => Buttons);
             }
@@ -174,7 +160,7 @@ namespace TouchRemote.Model.Impl
             {
                 var e = sender as RemoteElement;
                 Save();
-                GetBroadcastContext().UpdateControl(new WebControl(e.Id, (int)Math.Round(e.X), (int)Math.Round(e.Y), e.ZIndex, e.WebControlType, e.WebProperties));
+                RemoteHub.GetBroadcastContext().UpdateControl(new WebControl(e.Id, (int)Math.Round(e.X), (int)Math.Round(e.Y), e.ZIndex, e.WebControlType, e.WebProperties));
                 if (e.BoundPropertyNames.Contains(args.PropertyName)) _Watcher.UpdateBoundProperties(e);
             }
         }

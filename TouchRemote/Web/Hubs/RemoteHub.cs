@@ -1,7 +1,4 @@
-﻿using JWT;
-using JWT.Serializers;
-using log4net;
-using Microsoft.AspNet.SignalR;
+﻿using Microsoft.AspNet.SignalR;
 using Microsoft.AspNet.SignalR.Hubs;
 using System;
 using System.Collections.Generic;
@@ -15,18 +12,15 @@ namespace TouchRemote.Web.Hubs
     [HubName("remoteHub")]
     public class RemoteHub : Hub<IClient>
     {
+        private const string GROUP_AUTHED = "authenticated";
+
         private readonly IRemoteControlService _RemoteControlService;
         private readonly IWebServer _WebServer;
-        private readonly IJwtDecoder _JwtDecoder;
-        private readonly ILog _Log;
 
         public RemoteHub(IRemoteControlService remoteControlService, IWebServer webServer)
         {
             _RemoteControlService = remoteControlService;
             _WebServer = webServer;
-            var jsonSerializer = new JsonNetSerializer();
-            _JwtDecoder = new JwtDecoder(jsonSerializer, new JwtValidator(jsonSerializer, new UtcDateTimeProvider()), new JwtBase64UrlEncoder());
-            _Log = LogManager.GetLogger(GetType());
         }
 
         public override Task OnConnected()
@@ -45,6 +39,19 @@ namespace TouchRemote.Web.Hubs
         {
             AddConnection();
             return base.OnReconnected();
+        }
+
+        public AuthResponse<string> Login(string password)
+        {
+            string token = _WebServer.CreateToken(password);
+            AuthState authState = _WebServer.Login(Context.ConnectionId, token);
+            if (authState == AuthState.Authenticated)
+            {
+                Groups.Add(Context.ConnectionId, GROUP_AUTHED);
+                return AuthResponse<string>.Authenticated(token);
+            }
+            Groups.Remove(Context.ConnectionId, GROUP_AUTHED);
+            return AuthResponse<string>.NotAuthenticated(authState);
         }
 
         public AuthResponse<IEnumerable<WebControl>> GetControls(string token)
@@ -75,62 +82,27 @@ namespace TouchRemote.Web.Hubs
 
         private AuthResponse<T> Authenticate<T>(string token, Func<T> callback)
         {
-            string requiredPassword = _RemoteControlService.GetRequiredPassword();
-            if (string.IsNullOrEmpty(requiredPassword))
+            AuthState authState = _WebServer.CheckAuth(Context.ConnectionId, token);
+            if (authState == AuthState.Authenticated)
             {
+                Groups.Add(Context.ConnectionId, GROUP_AUTHED);
                 return AuthResponse<T>.Authenticated(callback.Invoke());
             }
-            if (!string.IsNullOrEmpty(token))
-            {
-                try
-                {
-                    var payload = _JwtDecoder.DecodeToObject<TokenPayload>(token);
-                    if (payload.Key == requiredPassword)
-                    {
-                        return AuthResponse<T>.Authenticated(callback.Invoke());
-                    }
-                }
-                catch (SignatureVerificationException)
-                {
-                    // Fall through
-                }
-                catch (Exception ex)
-                {
-                    _Log.Error(string.Format("Exception processing SignalR request authentication: {0}", ex.Message), ex);
-                }
-            }
-            return AuthResponse<T>.NotAuthenticated;
+            Groups.Remove(Context.ConnectionId, GROUP_AUTHED);
+            return AuthResponse<T>.NotAuthenticated(authState);
         }
 
         private AuthResponse Authenticate(string token, Action callback)
         {
-            string requiredPassword = _RemoteControlService.GetRequiredPassword();
-            if (string.IsNullOrEmpty(requiredPassword))
+            AuthState authState = _WebServer.CheckAuth(Context.ConnectionId, token);
+            if (authState == AuthState.Authenticated)
             {
+                Groups.Add(Context.ConnectionId, GROUP_AUTHED);
                 callback.Invoke();
                 return AuthResponse.Authenticated;
             }
-            if (!string.IsNullOrEmpty(token))
-            {
-                try
-                {
-                    var payload = _JwtDecoder.DecodeToObject<TokenPayload>(token);
-                    if (payload.Key == requiredPassword)
-                    {
-                        callback.Invoke();
-                        return AuthResponse.Authenticated;
-                    }
-                }
-                catch (SignatureVerificationException)
-                {
-                    // Fall through
-                }
-                catch (Exception ex)
-                {
-                    _Log.Error(string.Format("Exception processing SignalR request authentication: {0}", ex.Message), ex);
-                }
-            }
-            return AuthResponse.NotAuthenticated;
+            Groups.Remove(Context.ConnectionId, GROUP_AUTHED);
+            return AuthResponse.NotAuthenticated(authState);
         }
 
         private string GetString(string key)
@@ -148,13 +120,13 @@ namespace TouchRemote.Web.Hubs
             int localPort = int.Parse(GetString("server.LocalPort"));
             IPEndPoint remoteEndpoint = new IPEndPoint(remoteAddress, remotePort);
             IPEndPoint localEndpoint = new IPEndPoint(localAddress, localPort);
-            Connection conn = new Connection
-            {
-                Id = Context.ConnectionId,
-                RemoteEndpoint = remoteEndpoint,
-                LocalEndpoint = localEndpoint
-            };
+            Connection conn = new Connection(Context.ConnectionId, remoteEndpoint, localEndpoint);
             _WebServer.RegisterConnection(conn);
+        }
+
+        public static IClient GetBroadcastContext()
+        {
+            return GlobalHost.ConnectionManager.GetHubContext<RemoteHub, IClient>().Clients.Group(GROUP_AUTHED);
         }
     }
 

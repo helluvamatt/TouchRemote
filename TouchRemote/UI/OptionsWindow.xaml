@@ -137,7 +137,18 @@
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
                                 <TextBlock>
-                                    <fa:FontAwesome Icon="Mobile" />
+                                    <fa:FontAwesome Icon="Mobile">
+                                        <fa:FontAwesome.Style>
+                                            <Style TargetType="fa:FontAwesome">
+                                                <Setter Property="Foreground" Value="Red" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding AuthState}" Value="Authenticated">
+                                                        <Setter Property="Foreground" Value="Green" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </fa:FontAwesome.Style>
+                                    </fa:FontAwesome>
                                     <Run>
                                         <Run.Text>
                                             <MultiBinding StringFormat="{}{0}:{1}">
@@ -502,7 +513,7 @@
                 </Grid>
             </TabItem>
             <TabItem vm:IconTabItem.Icon="Cog" Header="Settings" HeaderTemplate="{StaticResource tabItemTemplate}">
-                <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" FocusVisualStyle="{x:Null}">
                     <StackPanel Orientation="Vertical">
                         <GroupBox Header="Server" Padding="6">
                             <StackPanel Orientation="Vertical">
@@ -515,7 +526,7 @@
                                 <Label FontWeight="Bold">Interface:</Label>
                                 <RadioButton IsChecked="{Binding Source={x:Static p:Settings.Default}, Path=ListenAddressesMode, Converter={StaticResource enumBooleanConverter}, ConverterParameter=LOCAL_ONLY}" GroupName="ListenInterfaceMode" Margin="0,6,0,0" Content="Localhost (most secure, only useful for testing)" />
                                 <RadioButton IsChecked="{Binding Source={x:Static p:Settings.Default}, Path=ListenAddressesMode, Converter={StaticResource enumBooleanConverter}, ConverterParameter=CUSTOM}" GroupName="ListenInterfaceMode" Margin="0,6,0,0" Content="Selected Interfaces:" />
-                                <ListBox ItemsSource="{Binding Interfaces}" IsEnabled="{Binding Source={x:Static p:Settings.Default}, Path=ListenAddressesMode, Converter={StaticResource enumBooleanConverter}, ConverterParameter=CUSTOM}" Margin="16,4,0,0" Height="100">
+                                <ListBox ItemsSource="{Binding Interfaces}" IsEnabled="{Binding Source={x:Static p:Settings.Default}, Path=ListenAddressesMode, Converter={StaticResource enumBooleanConverter}, ConverterParameter=CUSTOM}" Margin="16,4,0,0" Height="100" BorderBrush="{DynamicResource AccentColorBrush}" BorderThickness="1">
                                     <ListBox.ItemTemplate>
                                         <DataTemplate>
                                             <ListBoxItem IsSelected="{Binding Checked}">
@@ -539,8 +550,10 @@
                         </GroupBox>
                         <GroupBox Header="Authentication" Padding="6">
                             <StackPanel Orientation="Vertical">
-                                <CheckBox Content="Require Password" IsChecked="{Binding PasswordRequired}" />
+                                <CheckBox Content="Require Password:" IsChecked="{Binding PasswordRequired}" />
                                 <TextBox Margin="0,6,0,0" Text="{Binding Source={x:Static p:Settings.Default}, Path=RequiredPassword}" IsEnabled="{Binding PasswordRequired}" />
+                                <Label>Max Sessions:</Label>
+                                <mac:NumericUpDown Interval="1" Value="{Binding Path=MaxSessions, Source={x:Static p:Settings.Default}}" Minimum="0" TextAlignment="Left" />
                             </StackPanel>
                         </GroupBox>
                     </StackPanel>

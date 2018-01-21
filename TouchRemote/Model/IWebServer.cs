@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
 namespace TouchRemote.Model
 {
@@ -11,6 +7,12 @@ namespace TouchRemote.Model
         void RegisterConnection(Connection connection);
 
         void UnregisterConnection(string connectionId);
+
+        string CreateToken(string password);
+
+        AuthState Login(string connectionId, string token);
+
+        AuthState CheckAuth(string connectionId, string token);
 
         IEnumerable<Connection> Connections { get; }
 

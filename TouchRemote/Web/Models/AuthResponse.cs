@@ -1,4 +1,6 @@
-﻿namespace TouchRemote.Web.Models
+﻿using TouchRemote.Model;
+
+namespace TouchRemote.Web.Models
 {
     public class AuthResponse<T>
     {
@@ -6,19 +8,16 @@
 
         public T Data { get; private set; }
 
-        public bool IsValid { get; private set; }
+        public AuthState AuthState { get; private set; }
 
         public static AuthResponse<T> Authenticated(T data)
         {
-            return new AuthResponse<T> { IsValid = true, Data = data };
+            return new AuthResponse<T> { AuthState = AuthState.Authenticated, Data = data };
         }
 
-        public static AuthResponse<T> NotAuthenticated
+        public static AuthResponse<T> NotAuthenticated(AuthState authState)
         {
-            get
-            {
-                return new AuthResponse<T> { IsValid = false };
-            }
+            return new AuthResponse<T> { AuthState = authState };
         }
     }
 
@@ -26,22 +25,19 @@
     {
         private AuthResponse() { }
 
-        public bool IsValid { get; private set; }
+        public AuthState AuthState { get; private set; }
 
         public static AuthResponse Authenticated
         {
             get
             {
-                return new AuthResponse { IsValid = true };
+                return new AuthResponse { AuthState = AuthState.Authenticated };
             }
         }
 
-        public static AuthResponse NotAuthenticated
+        public static AuthResponse NotAuthenticated(AuthState authState)
         {
-            get
-            {
-                return new AuthResponse { IsValid = false };
-            }
+            return new AuthResponse { AuthState = authState };
         }
     }
 }

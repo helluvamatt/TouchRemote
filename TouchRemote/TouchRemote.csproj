@@ -213,8 +213,6 @@
     <Compile Include="Utils\PresentationUtils.cs" />
     <Compile Include="Web\Hubs\RemoteHub.cs" />
     <Compile Include="Web\Models\AuthResponse.cs" />
-    <Compile Include="Web\Models\ClickRequest.cs" />
-    <Compile Include="Web\Models\ClickResponse.cs" />
     <Compile Include="Web\Models\TokenPayload.cs" />
     <Compile Include="Web\Models\WebControl.cs" />
     <Compile Include="Model\PluginDescriptor.cs" />
@@ -257,9 +255,7 @@
     <Compile Include="Utils\RegistrySettingsProvider.cs" />
     <Compile Include="Web\AppBootstrapper.cs" />
     <Compile Include="Web\AssetsModule.cs" />
-    <Compile Include="Web\Models\LoginRequest.cs" />
     <Compile Include="Web\Models\Token.cs" />
-    <Compile Include="Web\Models\DefaultModel.cs" />
     <Compile Include="Web\WebModule.cs" />
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>

@@ -81,5 +81,17 @@ namespace TouchRemote.Properties {
                 this["LastOpenDirectory"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public uint MaxSessions {
+            get {
+                return ((uint)(this["MaxSessions"]));
+            }
+            set {
+                this["MaxSessions"] = value;
+            }
+        }
     }
 }
