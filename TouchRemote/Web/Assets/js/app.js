@@ -133,11 +133,26 @@ var vm = new Vue({
         error: null,
         reconnecting: false,
         hubConnected: false,
+        resizeHandler: null,
     },
     created: function () {
         var $vm = this;
         var remoteHub = $.connection.remoteHub;
         var loadControls = false;
+
+        this.resizeHandler = throttle(function () {
+            if ($vm.hubConnected) {
+                var width = document.documentElement.clientWidth;
+                var height = document.documentElement.clientHeight;
+                remoteHub.server.setClientSize($vm.token, width, height).done(function (result) {
+                    if (!result.IsValid) {
+                        this.$router.replace('/login');
+                    }
+                });
+            }
+        }, 50);
+
+        window.addEventListener('resize', this.resizeHandler);
 
         var getControls = function () {
             if ($vm.hubConnected) {
@@ -151,12 +166,15 @@ var vm = new Vue({
             }
         };
 
+        window.addEventListener('resize', this.handleResize);
+
         $.connection.hub.reconnecting(function () {
             $vm.reconnecting = true;
         });
 
         $.connection.hub.reconnected(function () {
             $vm.reconnecting = false;
+            $vm.resizeHandler();
         });
 
         $.connection.hub.disconnected(function () {
@@ -208,6 +226,10 @@ var vm = new Vue({
         $.connection.hub.start().done(function () {
             $vm.hubConnected = true;
             EventBus.$emit('hub-connected');
+            $vm.resizeHandler();
         });
+    },
+    beforeDestroy: function () {
+        window.removeEventListener('resize', this.handleResize)
     }
 });

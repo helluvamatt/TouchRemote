@@ -183,109 +183,171 @@
                 </Grid>
             </TabItem>
             <TabItem vm:IconTabItem.Icon="Th" Header="Layout" HeaderTemplate="{StaticResource tabItemTemplate}">
-                <ItemsControl ItemsSource="{Binding RemoteControlService.Buttons}" FocusVisualStyle="{x:Null}" Background="Transparent" PreviewMouseRightButtonDown="ItemsControl_PreviewMouseRightButtonDown">
-                    <ItemsControl.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <Canvas ClipToBounds="True" />
-                        </ItemsPanelTemplate>
-                    </ItemsControl.ItemsPanel>
-                    <ItemsControl.ContextMenu>
-                        <ContextMenu>
-                            <ContextMenu.Resources>
-                                <Style TargetType="fa:ImageAwesome">
-                                    <Setter Property="Width" Value="20" />
-                                    <Setter Property="Height" Value="20" />
-                                </Style>
-                            </ContextMenu.Resources>
-                            <MenuItem Command="{Binding AddButtonCommand}" Header="Add button...">
-                                <MenuItem.Icon>
-                                    <fa:ImageAwesome Icon="PlusSquareOutline" />
-                                </MenuItem.Icon>
-                            </MenuItem>
-                            <MenuItem Command="{Binding AddToggleButtonCommand}" Header="Add toggle button...">
-                                <MenuItem.Icon>
-                                    <fa:ImageAwesome Icon="ToggleOn" />
-                                </MenuItem.Icon>
-                            </MenuItem>
-                            <MenuItem Command="{Binding AddBoundToggleButtonCommand}" Header="Add bound toggle button...">
-                                <MenuItem.Icon>
-                                    <fa:ImageAwesome Icon="ToggleOn" />
-                                </MenuItem.Icon>
-                            </MenuItem>
-                            <MenuItem Command="{Binding AddSliderCommand}" Header="Add slider...">
-                                <MenuItem.Icon>
-                                    <fa:ImageAwesome Icon="ArrowsH" />
-                                </MenuItem.Icon>
-                            </MenuItem>
-                        </ContextMenu>
-                    </ItemsControl.ContextMenu>
-                    <ItemsControl.Resources>
-                        <ContextMenu x:Key="itemContextMenu">
-                            <ContextMenu.Resources>
-                                <Style TargetType="fa:ImageAwesome">
-                                    <Setter Property="Width" Value="20" />
-                                    <Setter Property="Height" Value="20" />
-                                </Style>
-                            </ContextMenu.Resources>
-                            <MenuItem Command="{Binding PlacementTarget.Tag.OpenPropertiesCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" CommandParameter="{Binding}" Header="Properties">
-                                <MenuItem.Icon>
-                                    <fa:ImageAwesome Icon="Wrench" />
-                                </MenuItem.Icon>
-                            </MenuItem>
-                            <Separator />
-                            <MenuItem Command="{Binding PlacementTarget.Tag.RemoveButtonCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" CommandParameter="{Binding}" Header="Delete">
-                                <MenuItem.Icon>
-                                    <fa:ImageAwesome Icon="TrashOutline" />
-                                </MenuItem.Icon>
-                            </MenuItem>
-                        </ContextMenu>
-                        <Style x:Key="controlBorder" TargetType="Border">
-                            <Setter Property="MinHeight" Value="108" />
-                            <Setter Property="MinWidth" Value="108" />
-                            <Setter Property="BorderThickness" Value="1" />
-                            <Setter Property="BorderBrush">
-                                <Setter.Value>
-                                    <SolidColorBrush Color="#FFCCCCCC" />
-                                </Setter.Value>
-                            </Setter>
-                            <Setter Property="Background" Value="White" />
-                            <Setter Property="CornerRadius" Value="4" />
-                        </Style>
-                        <Style x:Key="sliderBorder" TargetType="Border" BasedOn="{StaticResource controlBorder}">
-                            <Setter Property="Padding" Value="6 12" />
-                        </Style>
-                        <Style x:Key="buttonBorder" TargetType="Border" BasedOn="{StaticResource controlBorder}">
-                            <Setter Property="MaxWidth" Value="108" />
-                            <Setter Property="Padding" Value="16" />
-                            <Style.Triggers>
-                                <Trigger Property="Border.IsMouseOver" Value="True">
-                                    <Setter Property="BorderBrush">
-                                        <Setter.Value>
-                                            <SolidColorBrush Color="#FFADADAD" />
-                                        </Setter.Value>
-                                    </Setter>
-                                    <Setter Property="Background">
-                                        <Setter.Value>
-                                            <SolidColorBrush Color="#FFE6E6E6" />
-                                        </Setter.Value>
-                                    </Setter>
-                                </Trigger>
-                            </Style.Triggers>
-                        </Style>
-                        <DataTemplate DataType="{x:Type controls:RemoteButton}">
-                            <Border Tag="{Binding DataContext, RelativeSource={RelativeSource AncestorType=ItemsControl}}" ContextMenu="{StaticResource itemContextMenu}" Style="{StaticResource buttonBorder}">
-                                <StackPanel Orientation="Vertical" VerticalAlignment="Top">
-                                    <Image Width="48" Height="48" Source="{Binding Icon.Source.Image}" />
-                                    <TextBlock Margin="0,10,0,0" HorizontalAlignment="Stretch" TextAlignment="Center" TextWrapping="WrapWithOverflow" Text="{Binding Label}" Visibility="{Binding Label, Converter={StaticResource stringEmptyVisiblityConverter}}" />
-                                </StackPanel>
-                            </Border>
-                        </DataTemplate>
-                        <DataTemplate DataType="{x:Type controls:RemoteToggleButtonBase}">
-                            <Border Tag="{Binding DataContext, RelativeSource={RelativeSource AncestorType=ItemsControl}}" ContextMenu="{StaticResource itemContextMenu}" Style="{StaticResource buttonBorder}">
-                                <StackPanel Orientation="Vertical" VerticalAlignment="Top">
-                                    <Grid>
+                <Grid>
+                    <ItemsControl ItemsSource="{Binding Path=WebServer.Clients}" FocusVisualStyle="{x:Null}" Background="Transparent">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <Canvas ClipToBounds="True" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.Resources>
+                            <Style x:Key="clientAreaBorder" TargetType="Border">
+                                <Setter Property="Background" Value="Transparent" />
+                                <Setter Property="BorderBrush">
+                                    <Setter.Value>
+                                        <DrawingBrush Viewport="0,0,8,8" ViewportUnits="Absolute" TileMode="Tile">
+                                            <DrawingBrush.Drawing>
+                                                <DrawingGroup>
+                                                    <GeometryDrawing>
+                                                        <GeometryDrawing.Brush>
+                                                            <SolidColorBrush Color="#80000000" />
+                                                        </GeometryDrawing.Brush>
+                                                        <GeometryDrawing.Geometry>
+                                                            <GeometryGroup>
+                                                                <RectangleGeometry Rect="0,0,50,50" />
+                                                                <RectangleGeometry Rect="50,50,50,50" />
+                                                            </GeometryGroup>
+                                                        </GeometryDrawing.Geometry>
+                                                    </GeometryDrawing>
+                                                </DrawingGroup>
+                                            </DrawingBrush.Drawing>
+                                        </DrawingBrush>
+                                    </Setter.Value>
+                                </Setter>
+                                <Setter Property="BorderThickness" Value="1" />
+                            </Style>
+                        </ItemsControl.Resources>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Style="{StaticResource clientAreaBorder}">
+                                    <Border VerticalAlignment="Bottom" HorizontalAlignment="Right" Background="White" CornerRadius="4" BorderBrush="Black" BorderThickness="1" Padding="4 2" Margin="4">
+                                        <TextBlock Foreground="Black">
+                                            <fa:FontAwesome Icon="Mobile" />
+                                            <Run>
+                                                <Run.Text>
+                                                    <MultiBinding StringFormat="{}{0}:{1}">
+                                                        <Binding Path="RemoteEndpoint.Address" />
+                                                        <Binding Path="RemoteEndpoint.Port" />
+                                                    </MultiBinding>
+                                                </Run.Text>
+                                            </Run>
+                                        </TextBlock>
+                                    </Border>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                        <ItemsControl.ItemContainerStyle>
+                            <Style TargetType="ContentPresenter">
+                                <Setter Property="Canvas.Top" Value="0" />
+                                <Setter Property="Canvas.Left" Value="0" />
+                                <Setter Property="Canvas.Width" Value="{Binding ClientWidth}" />
+                                <Setter Property="Canvas.Height" Value="{Binding ClientHeight}" />
+                            </Style>
+                        </ItemsControl.ItemContainerStyle>
+                    </ItemsControl>
+                    <ItemsControl ItemsSource="{Binding RemoteControlService.Buttons}" FocusVisualStyle="{x:Null}" Background="Transparent" PreviewMouseRightButtonDown="ItemsControl_PreviewMouseRightButtonDown">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <Canvas ClipToBounds="True" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ContextMenu>
+                            <ContextMenu>
+                                <ContextMenu.Resources>
+                                    <Style TargetType="fa:ImageAwesome">
+                                        <Setter Property="Width" Value="20" />
+                                        <Setter Property="Height" Value="20" />
+                                    </Style>
+                                </ContextMenu.Resources>
+                                <MenuItem Command="{Binding AddButtonCommand}" Header="Add button...">
+                                    <MenuItem.Icon>
+                                        <fa:ImageAwesome Icon="PlusSquareOutline" />
+                                    </MenuItem.Icon>
+                                </MenuItem>
+                                <MenuItem Command="{Binding AddToggleButtonCommand}" Header="Add toggle button...">
+                                    <MenuItem.Icon>
+                                        <fa:ImageAwesome Icon="ToggleOn" />
+                                    </MenuItem.Icon>
+                                </MenuItem>
+                                <MenuItem Command="{Binding AddBoundToggleButtonCommand}" Header="Add bound toggle button...">
+                                    <MenuItem.Icon>
+                                        <fa:ImageAwesome Icon="ToggleOn" />
+                                    </MenuItem.Icon>
+                                </MenuItem>
+                                <MenuItem Command="{Binding AddSliderCommand}" Header="Add slider...">
+                                    <MenuItem.Icon>
+                                        <fa:ImageAwesome Icon="ArrowsH" />
+                                    </MenuItem.Icon>
+                                </MenuItem>
+                            </ContextMenu>
+                        </ItemsControl.ContextMenu>
+                        <ItemsControl.Resources>
+                            <ContextMenu x:Key="itemContextMenu">
+                                <ContextMenu.Resources>
+                                    <Style TargetType="fa:ImageAwesome">
+                                        <Setter Property="Width" Value="20" />
+                                        <Setter Property="Height" Value="20" />
+                                    </Style>
+                                </ContextMenu.Resources>
+                                <MenuItem Command="{Binding PlacementTarget.Tag.OpenPropertiesCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" CommandParameter="{Binding}" Header="Properties">
+                                    <MenuItem.Icon>
+                                        <fa:ImageAwesome Icon="Wrench" />
+                                    </MenuItem.Icon>
+                                </MenuItem>
+                                <Separator />
+                                <MenuItem Command="{Binding PlacementTarget.Tag.RemoveButtonCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" CommandParameter="{Binding}" Header="Delete">
+                                    <MenuItem.Icon>
+                                        <fa:ImageAwesome Icon="TrashOutline" />
+                                    </MenuItem.Icon>
+                                </MenuItem>
+                            </ContextMenu>
+                            <Style x:Key="controlBorder" TargetType="Border">
+                                <Setter Property="MinHeight" Value="108" />
+                                <Setter Property="MinWidth" Value="108" />
+                                <Setter Property="BorderThickness" Value="1" />
+                                <Setter Property="BorderBrush">
+                                    <Setter.Value>
+                                        <SolidColorBrush Color="#FFCCCCCC" />
+                                    </Setter.Value>
+                                </Setter>
+                                <Setter Property="Background" Value="White" />
+                                <Setter Property="CornerRadius" Value="4" />
+                            </Style>
+                            <Style x:Key="sliderBorder" TargetType="Border" BasedOn="{StaticResource controlBorder}">
+                                <Setter Property="Padding" Value="6 12" />
+                            </Style>
+                            <Style x:Key="buttonBorder" TargetType="Border" BasedOn="{StaticResource controlBorder}">
+                                <Setter Property="MaxWidth" Value="108" />
+                                <Setter Property="Padding" Value="16" />
+                                <Style.Triggers>
+                                    <Trigger Property="Border.IsMouseOver" Value="True">
+                                        <Setter Property="BorderBrush">
+                                            <Setter.Value>
+                                                <SolidColorBrush Color="#FFADADAD" />
+                                            </Setter.Value>
+                                        </Setter>
+                                        <Setter Property="Background">
+                                            <Setter.Value>
+                                                <SolidColorBrush Color="#FFE6E6E6" />
+                                            </Setter.Value>
+                                        </Setter>
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                            <DataTemplate DataType="{x:Type controls:RemoteButton}">
+                                <Border Tag="{Binding DataContext, RelativeSource={RelativeSource AncestorType=ItemsControl}}" ContextMenu="{StaticResource itemContextMenu}" Style="{StaticResource buttonBorder}">
+                                    <StackPanel Orientation="Vertical" VerticalAlignment="Top">
                                         <Image Width="48" Height="48" Source="{Binding Icon.Source.Image}" />
-                                        <TextBlock HorizontalAlignment="Right" VerticalAlignment="Bottom" FontSize="10px">
+                                        <TextBlock Margin="0,10,0,0" HorizontalAlignment="Stretch" TextAlignment="Center" TextWrapping="WrapWithOverflow" Text="{Binding Label}" Visibility="{Binding Label, Converter={StaticResource stringEmptyVisiblityConverter}}" />
+                                    </StackPanel>
+                                </Border>
+                            </DataTemplate>
+                            <DataTemplate DataType="{x:Type controls:RemoteToggleButtonBase}">
+                                <Border Tag="{Binding DataContext, RelativeSource={RelativeSource AncestorType=ItemsControl}}" ContextMenu="{StaticResource itemContextMenu}" Style="{StaticResource buttonBorder}">
+                                    <StackPanel Orientation="Vertical" VerticalAlignment="Top">
+                                        <Grid>
+                                            <Image Width="48" Height="48" Source="{Binding Icon.Source.Image}" />
+                                            <TextBlock HorizontalAlignment="Right" VerticalAlignment="Bottom" FontSize="10px">
                                             <fa:FontAwesome>
                                                 <fa:FontAwesome.Style>
                                                     <Style TargetType="fa:FontAwesome">
@@ -298,52 +360,53 @@
                                                     </Style>
                                                 </fa:FontAwesome.Style>
                                             </fa:FontAwesome>
-                                        </TextBlock>
+                                            </TextBlock>
+                                        </Grid>
+                                        <TextBlock Margin="0,10,0,0" HorizontalAlignment="Stretch" TextAlignment="Center" TextWrapping="WrapWithOverflow" Text="{Binding Label}"  Visibility="{Binding Label, Converter={StaticResource stringEmptyVisiblityConverter}}" />
+                                    </StackPanel>
+                                </Border>
+                            </DataTemplate>
+                            <DataTemplate DataType="{x:Type controls:RemoteSlider}">
+                                <Border Tag="{Binding DataContext, RelativeSource={RelativeSource AncestorType=ItemsControl}}" ContextMenu="{StaticResource itemContextMenu}" Style="{StaticResource sliderBorder}">
+                                    <Grid>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="*" />
+                                            <RowDefinition Height="auto" />
+                                        </Grid.RowDefinitions>
+                                        <Slider Grid.Row="0" Minimum="0.0" Maximum="1.0" Orientation="{Binding Orientation}" Value="{Binding NormalizedValue}">
+                                            <Slider.Style>
+                                                <Style TargetType="Slider" BasedOn="{StaticResource MetroSlider}">
+                                                    <Setter Property="Width" Value="200" />
+                                                    <Setter Property="Height" Value="auto" />
+                                                    <Setter Property="HorizontalAlignment" Value="Center" />
+                                                    <Setter Property="VerticalAlignment" Value="Center" />
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding Orientation}" Value="Vertical">
+                                                            <Setter Property="Width" Value="auto" />
+                                                            <Setter Property="Height" Value="200" />
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Slider.Style>
+                                        </Slider>
+                                        <Label Margin="0,10,0,0" Grid.Row="1" Content="{Binding Label}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" />
                                     </Grid>
-                                    <TextBlock Margin="0,10,0,0" HorizontalAlignment="Stretch" TextAlignment="Center" TextWrapping="WrapWithOverflow" Text="{Binding Label}"  Visibility="{Binding Label, Converter={StaticResource stringEmptyVisiblityConverter}}" />
-                                </StackPanel>
-                            </Border>
-                        </DataTemplate>
-                        <DataTemplate DataType="{x:Type controls:RemoteSlider}">
-                            <Border Tag="{Binding DataContext, RelativeSource={RelativeSource AncestorType=ItemsControl}}" ContextMenu="{StaticResource itemContextMenu}" Style="{StaticResource sliderBorder}">
-                                <Grid>
-                                    <Grid.RowDefinitions>
-                                        <RowDefinition Height="*" />
-                                        <RowDefinition Height="auto" />
-                                    </Grid.RowDefinitions>
-                                    <Slider Grid.Row="0" Minimum="0.0" Maximum="1.0" Orientation="{Binding Orientation}" Value="{Binding NormalizedValue}">
-                                        <Slider.Style>
-                                            <Style TargetType="Slider" BasedOn="{StaticResource MetroSlider}">
-                                                <Setter Property="Width" Value="200" />
-                                                <Setter Property="Height" Value="auto" />
-                                                <Setter Property="HorizontalAlignment" Value="Center" />
-                                                <Setter Property="VerticalAlignment" Value="Center" />
-                                                <Style.Triggers>
-                                                    <DataTrigger Binding="{Binding Orientation}" Value="Vertical">
-                                                        <Setter Property="Width" Value="auto" />
-                                                        <Setter Property="Height" Value="200" />
-                                                    </DataTrigger>
-                                                </Style.Triggers>
-                                            </Style>
-                                        </Slider.Style>
-                                    </Slider>
-                                    <Label Margin="0,10,0,0" Grid.Row="1" Content="{Binding Label}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" />
-                                </Grid>
-                            </Border>
-                        </DataTemplate>
-                    </ItemsControl.Resources>
-                    <ItemsControl.ItemContainerStyle>
-                        <Style TargetType="ContentPresenter">
-                            <Setter Property="Canvas.Left" Value="{Binding Path=X, Mode=TwoWay}" />
-                            <Setter Property="Canvas.Top" Value="{Binding Path=Y, Mode=TwoWay}" />
-                            <Setter Property="Panel.ZIndex" Value="{Binding Path=ZIndex, Mode=TwoWay}" />
-                            <Setter Property="AllowDrop" Value="True" />
-                            <EventSetter Event="PreviewMouseLeftButtonDown" Handler="item_PreviewMouseLeftButtonDown" />
-                            <EventSetter Event="PreviewMouseMove" Handler="item_PreviewMouseMove" />
-                            <EventSetter Event="PreviewMouseLeftButtonUp" Handler="item_PreviewMouseLeftButtonUp" />
-                        </Style>
-                    </ItemsControl.ItemContainerStyle>
-                </ItemsControl>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.Resources>
+                        <ItemsControl.ItemContainerStyle>
+                            <Style TargetType="ContentPresenter">
+                                <Setter Property="Canvas.Left" Value="{Binding Path=X, Mode=TwoWay}" />
+                                <Setter Property="Canvas.Top" Value="{Binding Path=Y, Mode=TwoWay}" />
+                                <Setter Property="Panel.ZIndex" Value="{Binding Path=ZIndex, Mode=TwoWay}" />
+                                <Setter Property="AllowDrop" Value="True" />
+                                <EventSetter Event="PreviewMouseLeftButtonDown" Handler="item_PreviewMouseLeftButtonDown" />
+                                <EventSetter Event="PreviewMouseMove" Handler="item_PreviewMouseMove" />
+                                <EventSetter Event="PreviewMouseLeftButtonUp" Handler="item_PreviewMouseLeftButtonUp" />
+                            </Style>
+                        </ItemsControl.ItemContainerStyle>
+                    </ItemsControl>
+                </Grid>
             </TabItem>
             <TabItem vm:IconTabItem.Icon="Plug" Header="Plugins" HeaderTemplate="{StaticResource tabItemTemplate}">
                 <Grid>

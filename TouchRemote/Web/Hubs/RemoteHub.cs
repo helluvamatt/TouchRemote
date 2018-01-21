@@ -65,6 +65,14 @@ namespace TouchRemote.Web.Hubs
             });
         }
 
+        public AuthResponse SetClientSize(string token, int width, int height)
+        {
+            return Authenticate(token, () =>
+            {
+                _WebServer.SetClientSize(Context.ConnectionId, width, height);
+            });
+        }
+
         private AuthResponse<T> Authenticate<T>(string token, Func<T> callback)
         {
             string requiredPassword = _RemoteControlService.GetRequiredPassword();
@@ -92,6 +100,37 @@ namespace TouchRemote.Web.Hubs
                 }
             }
             return AuthResponse<T>.NotAuthenticated;
+        }
+
+        private AuthResponse Authenticate(string token, Action callback)
+        {
+            string requiredPassword = _RemoteControlService.GetRequiredPassword();
+            if (string.IsNullOrEmpty(requiredPassword))
+            {
+                callback.Invoke();
+                return AuthResponse.Authenticated;
+            }
+            if (!string.IsNullOrEmpty(token))
+            {
+                try
+                {
+                    var payload = _JwtDecoder.DecodeToObject<TokenPayload>(token);
+                    if (payload.Key == requiredPassword)
+                    {
+                        callback.Invoke();
+                        return AuthResponse.Authenticated;
+                    }
+                }
+                catch (SignatureVerificationException)
+                {
+                    // Fall through
+                }
+                catch (Exception ex)
+                {
+                    _Log.Error(string.Format("Exception processing SignalR request authentication: {0}", ex.Message), ex);
+                }
+            }
+            return AuthResponse.NotAuthenticated;
         }
 
         private string GetString(string key)

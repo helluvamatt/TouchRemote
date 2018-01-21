@@ -13,6 +13,8 @@ namespace TouchRemote.Model
         void UnregisterConnection(string connectionId);
 
         IEnumerable<Connection> Connections { get; }
+
+        void SetClientSize(string connectionId, int width, int height);
     }
 
     public enum ListenAddressMode

@@ -166,6 +166,18 @@ namespace TouchRemote
             }
         }
 
+        public void SetClientSize(string connectionId, int width, int height)
+        {
+            this.Invoke(() => {
+                var conn = Clients.FirstOrDefault(c => c.Id == connectionId);
+                if (conn != null)
+                {
+                    conn.ClientWidth = width;
+                    conn.ClientHeight = height;
+                }
+            });
+        }
+
         #endregion
     }
 }
