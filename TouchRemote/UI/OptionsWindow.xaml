@@ -9,6 +9,7 @@
                  xmlns:mac="http://metro.mahapps.com/winfx/xaml/controls"
                  xmlns:local="clr-namespace:TouchRemote"
                  xmlns:vm="clr-namespace:TouchRemote.ViewModels"
+                 xmlns:model="clr-namespace:TouchRemote.Model"
                  xmlns:p="clr-namespace:TouchRemote.Properties"
                  xmlns:uc="clr-namespace:TouchRemote.Utils.Converters"
                  xmlns:vr="clr-namespace:TouchRemote.Utils.ValidationRules"
@@ -35,6 +36,7 @@
         <uc:TypeStringConverter x:Key="typeStringConverter" />
         <uc:IsNullToVisibilityConverter x:Key="isNullToVisibilityConverter" />
         <uc:StringIsNullOrEmptyToVisibilityConverter x:Key="stringEmptyVisiblityConverter" />
+        <uc:EnumHasFlagToVisibilityConverter x:Key="enumHasFlagConverter" />
         <fa:CssClassNameConverter x:Key="faClassNameConverter" />
     </mac:MetroWindow.Resources>
     <mac:MetroWindow.RightWindowCommands>
@@ -137,6 +139,57 @@
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
                                 <TextBlock>
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="ToolTip">
+                                                <Setter.Value>
+                                                    <ToolTip>
+                                                        <ToolTip.Style>
+                                                            <Style TargetType="ToolTip" BasedOn="{StaticResource MetroToolTip}">
+                                                                <Setter Property="BorderBrush" Value="Red" />
+                                                                <Setter Property="Foreground" Value="Red" />
+                                                            </Style>
+                                                        </ToolTip.Style>
+                                                        <Grid>
+                                                            <Grid.RowDefinitions>
+                                                                <RowDefinition Height="auto" />
+                                                                <RowDefinition Height="auto" />
+                                                                <RowDefinition Height="auto" />
+                                                            </Grid.RowDefinitions>
+                                                            <Grid.ColumnDefinitions>
+                                                                <ColumnDefinition Width="auto" />
+                                                                <ColumnDefinition Width="auto" />
+                                                            </Grid.ColumnDefinitions>
+                                                            <fa:FontAwesome Grid.RowSpan="3" Icon="Times" Margin="3" />
+                                                            <TextBlock Grid.Row="0" Grid.Column="1" Visibility="{Binding AuthState, Converter={StaticResource enumHasFlagConverter}, ConverterParameter={x:Static model:AuthState.NoPassword}}">Not logged in.</TextBlock>
+                                                            <TextBlock Grid.Row="1" Grid.Column="1" Visibility="{Binding AuthState, Converter={StaticResource enumHasFlagConverter}, ConverterParameter={x:Static model:AuthState.ExceedsMaxConnections}}">Too many connections</TextBlock>
+                                                            <TextBlock Grid.Row="2" Grid.Column="1" Visibility="{Binding AuthState, Converter={StaticResource enumHasFlagConverter}, ConverterParameter={x:Static model:AuthState.IPNotAllowed}}">IP not in whitelist.</TextBlock>
+                                                        </Grid>
+                                                    </ToolTip>
+                                                </Setter.Value>
+                                            </Setter>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding AuthState}" Value="Authenticated">
+                                                    <Setter Property="ToolTip">
+                                                        <Setter.Value>
+                                                            <ToolTip>
+                                                                <ToolTip.Style>
+                                                                    <Style TargetType="ToolTip" BasedOn="{StaticResource MetroToolTip}">
+                                                                        <Setter Property="BorderBrush" Value="Green" />
+                                                                        <Setter Property="Foreground" Value="Green" />
+                                                                    </Style>
+                                                                </ToolTip.Style>
+                                                                <StackPanel Orientation="Horizontal">
+                                                                    <fa:FontAwesome Icon="Check" VerticalAlignment="Center" />
+                                                                    <TextBlock>Authenticated</TextBlock>
+                                                                </StackPanel>
+                                                            </ToolTip>
+                                                        </Setter.Value>
+                                                    </Setter>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
                                     <fa:FontAwesome Icon="Mobile">
                                         <fa:FontAwesome.Style>
                                             <Style TargetType="fa:FontAwesome">
@@ -551,9 +604,52 @@
                         <GroupBox Header="Authentication" Padding="6">
                             <StackPanel Orientation="Vertical">
                                 <CheckBox Content="Require Password:" IsChecked="{Binding PasswordRequired}" />
-                                <TextBox Margin="0,6,0,0" Text="{Binding Source={x:Static p:Settings.Default}, Path=RequiredPassword}" IsEnabled="{Binding PasswordRequired}" />
-                                <Label>Max Sessions:</Label>
-                                <mac:NumericUpDown Interval="1" Value="{Binding Path=MaxSessions, Source={x:Static p:Settings.Default}}" Minimum="0" TextAlignment="Left" />
+                                <TextBox Margin="0,2,0,0" Text="{Binding Source={x:Static p:Settings.Default}, Path=RequiredPassword}" IsEnabled="{Binding PasswordRequired}" />
+                                <Label Margin="0,6,0,0">Max Sessions:</Label>
+                                <mac:NumericUpDown Margin="0,6,0,0" Minimum="0" Interval="1" Value="{Binding Path=MaxSessions, Source={x:Static p:Settings.Default}}" TextAlignment="Left" />
+                                <Label Margin="0,6,0,0">Only allow connections from these IPs:</Label>
+                                <ListBox ItemsSource="{Binding IPWhitelist.Entries}" SelectedIndex="{Binding IPWhitelist.SelectedEntryIndex}" Height="100" BorderBrush="{DynamicResource AccentColorBrush}" BorderThickness="1">
+                                    <ListBox.Resources>
+                                        <DataTemplate x:Key="itemTemplate">
+                                            <Grid MinHeight="26">
+                                                <TextBlock Text="{Binding Value}" VerticalAlignment="Center" />
+                                            </Grid>
+                                        </DataTemplate>
+                                        <DataTemplate x:Key="editingTemplate">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="auto" />
+                                                </Grid.ColumnDefinitions>
+                                                <TextBox Grid.Column="0" Text="{Binding Value, ValidatesOnNotifyDataErrors=True}" />
+                                                <Button Grid.Column="1" Command="{Binding DataContext.IPWhitelist.RemoveEntryCommand, RelativeSource={RelativeSource AncestorType=ListBox}}">
+                                                    <fa:FontAwesome Icon="TrashOutline" />
+                                                </Button>
+                                            </Grid>
+                                        </DataTemplate>
+                                    </ListBox.Resources>
+                                    <ListBox.ItemContainerStyle>
+                                        <Style TargetType="ListBoxItem">
+                                            <Setter Property="ContentTemplate" Value="{StaticResource itemTemplate}" />
+                                            <Style.Triggers>
+                                                <Trigger Property="IsSelected" Value="True">
+                                                    <Setter Property="ContentTemplate" Value="{StaticResource editingTemplate}" />
+                                                </Trigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </ListBox.ItemContainerStyle>
+                                </ListBox>
+                                <Grid Margin="0,6,0,0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="auto" />
+                                        <ColumnDefinition Width="auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBox Grid.Column="0" Text="{Binding IPWhitelist.NewEntry.Value, ValidatesOnNotifyDataErrors=True}" />
+                                    <Button Grid.Column="1" Command="{Binding IPWhitelist.AddEntryCommand}">
+                                        <fa:FontAwesome Icon="Plus" />
+                                    </Button>
+                                </Grid>
                             </StackPanel>
                         </GroupBox>
                     </StackPanel>

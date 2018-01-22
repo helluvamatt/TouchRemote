@@ -25,6 +25,8 @@ using TouchRemote.Utils;
 using R = TouchRemote.Properties.Resources;
 using FontAwesome.WPF;
 using TouchRemote.Model.Persistence;
+using System.ComponentModel;
+using System.Collections;
 
 namespace TouchRemote.UI
 {
@@ -98,6 +100,8 @@ namespace TouchRemote.UI
 
         public ObservableCollection<InterfaceModel> Interfaces { get; private set; }
 
+        public IPWhitelist IPWhitelist { get; private set; }
+
         public RemoteControlService RemoteControlService { get; private set; }
 
         public PluginManager PluginManager { get; private set; }
@@ -132,6 +136,7 @@ namespace TouchRemote.UI
             PluginManager = pluginManager;
             _IconManager = iconManager;
             WebServer = webServer;
+            IPWhitelist = new IPWhitelist();
             Interfaces = new ObservableCollection<InterfaceModel>();
             ToggleErrorDetails = new DelegateCommand(() => ErrorDetailsVisible = !ErrorDetailsVisible);
             AddButtonCommand = new DelegateCommand(AddButton);

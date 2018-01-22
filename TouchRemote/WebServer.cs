@@ -166,12 +166,23 @@ namespace TouchRemote
 
         public void RegisterConnection(Connection connection)
         {
+            // Check if a password is required, connection has just been created so we have no password
+            if (!string.IsNullOrEmpty(Settings.Default.RequiredPassword))
+            {
+                connection.AuthState |= AuthState.NoPassword;
+            }
+
+            // Check if new connection would exceed max sessions
             if (Settings.Default.MaxSessions > 0 && Clients.Count + 1 > Settings.Default.MaxSessions)
             {
                 connection.AuthState |= AuthState.ExceedsMaxConnections;
             }
 
-            // TODO Set other authentication types, eg. IP address in whitelist (some parameters may need to be passed in from the hub context
+            // Check connection remote IP address against whitelist
+            if (Settings.Default.IPWhitelist != null && Settings.Default.IPWhitelist.Count > 0 && !Settings.Default.IPWhitelist.Contains(connection.RemoteEndpoint.Address.ToString()))
+            {
+                connection.AuthState |= AuthState.IPNotAllowed;
+            }
 
             InvokeAsync(() => Clients.Add(connection));
         }
@@ -231,7 +242,11 @@ namespace TouchRemote
                 authState |= AuthState.ExceedsMaxConnections;
             }
 
-            // TODO Check other authentication types, eg. IP address in whitelist (some parameters may need to be passed in from the hub context
+            // Check connection remote IP address against whitelist
+            if (Settings.Default.IPWhitelist != null && Settings.Default.IPWhitelist.Count > 0 && !Settings.Default.IPWhitelist.Contains(conn.RemoteEndpoint.Address.ToString()))
+            {
+                authState |= AuthState.IPNotAllowed;
+            }
 
             return conn.AuthState = authState;
         }
