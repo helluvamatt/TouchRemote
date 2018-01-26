@@ -50,18 +50,17 @@
         </div>
     </script>
     <script type="text/x-template" id="tpl_slider">
-        <div class="control slider" v-bind:style="{top: Y + 'px', left: X + 'px', zIndex: ZIndex * 10}">
-            <div v-bind:class="['slider-wrapper', Properties.Orientation]">
-                <input type="range" min="0" max="1" step="0.01" v-bind:value="Properties.Value" v-on:input="valueChanged" />
+        <div v-bind:class="['control', 'control-slider', Properties.Orientation]" v-bind:style="Styles">
+            <div class="slider-wrapper" v-bind:style="wrapperStyles">
+                <input type="range" min="0" max="1" step="0.01" v-bind:value="Properties.Value" v-on:input="valueChanged" v-bind:style="inputRangeStyles" />
             </div>
-            <div class="lbl">{{ Properties.Label }}</div>
         </div>
     </script>
     <script type="text/x-template" id="tpl_button">
-        <button type="button" class="btn btn-default control" v-bind:style="{top: Y + 'px', left: X + 'px', zIndex: ZIndex * 10}" @click="emitClicked">
-            <div class="icn"><img v-bind:src="Properties.IconData" alt="icon" /></div>
-            <div class="lbl">{{ Properties.Label }}</div>
-        </button>
+        <button type="button" class="btn btn-default control control-button" v-bind:style="realStyles" @click.stop="emitClicked" @mouseover.stop="isMouseOver = true" @mouseout.stop="isMouseOver = false"><div class="icn" v-if="Properties.IconData != ''"><img v-bind:src="Properties.IconData" alt="icon" /></div><div class="lbl">{{ Properties.Label }}</div></button>
+    </script>
+    <script type="text/x-template" id="tpl_label">
+        <div class="control control-label" v-bind:style="Styles">{{ Properties.Text }}</div>
     </script>
     <script type="text/x-template" id="tpl_login">
         <div class="col-xs-12 col-sm-8 col-sm-offset-2 col-md-6 col-md-offset-3 col-lg-4 col-lg-offset-4" style="text-align: center;">
@@ -84,7 +83,7 @@
         </div>
     </script>
     <script type="text/javascript" src="~/assets/js/lodash.throttle.js"></script>
-    <script type="text/javascript" src="~/assets/js/jquery.js"></script>
+    <script type="text/javascript" src="~/assets/js/jquery-3.3.1.js"></script>
     <script type="text/javascript" src="~/assets/js/jquery.signalR-2.2.2.js"></script>
     <script type="text/javascript" src="~/signalr/hubs"></script>
     <script type="text/javascript" src="~/assets/js/vue.js"></script>

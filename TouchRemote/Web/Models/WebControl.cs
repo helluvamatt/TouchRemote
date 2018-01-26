@@ -7,23 +7,17 @@ namespace TouchRemote.Web.Models
 {
     public class WebControl
     {
-        public WebControl(Guid id, int x, int y, int zIndex, WebControlType type, Dictionary<string, string> props)
+        public WebControl(Guid id, WebControlType type, Dictionary<string, string> style, Dictionary<string, string> props)
         {
             Id = id.ToString();
-            X = x;
-            Y = y;
-            ZIndex = zIndex;
             Type = type;
+            Styles = style;
             Properties = props;
         }
 
         public string Id { get; private set; }
 
-        public int X { get; private set; }
-
-        public int Y { get; private set; }
-
-        public int ZIndex { get; private set; }
+        public Dictionary<string, string> Styles { get; private set; }
 
         [JsonConverter(typeof(StringEnumConverter))]
         public WebControlType Type { get; private set; }
@@ -35,6 +29,7 @@ namespace TouchRemote.Web.Models
             Unknown = 0,
             Button = 1,
             Slider = 2,
+            Label = 3,
         }
     }
 }

@@ -27,6 +27,7 @@ using FontAwesome.WPF;
 using TouchRemote.Model.Persistence;
 using System.ComponentModel;
 using System.Collections;
+using System.Windows.Controls.Primitives;
 
 namespace TouchRemote.UI
 {
@@ -39,7 +40,7 @@ namespace TouchRemote.UI
 
         private Point contextMenuOpenedHere;
 
-        private ContentPresenter movingItem;
+        private ContentControl movingItem;
         private Point startPoint;
 
         private IconManager _IconManager;
@@ -51,6 +52,10 @@ namespace TouchRemote.UI
         public static readonly DependencyProperty PasswordRequiredProperty = DependencyProperty.Register("PasswordRequired", typeof(bool), typeof(OptionsWindow), new UIPropertyMetadata(PasswordRequiredChanged));
         public static readonly DependencyProperty SelectedPluginProperty = DependencyProperty.Register("SelectedPlugin", typeof(PluginDescriptor), typeof(OptionsWindow));
         public static readonly DependencyProperty ErrorDetailsVisibleProperty = DependencyProperty.Register("ErrorDetailsVisible", typeof(bool), typeof(OptionsWindow));
+        public static readonly DependencyProperty PluginsOpenProperty = DependencyProperty.Register("PluginsOpen", typeof(bool), typeof(OptionsWindow), new UIPropertyMetadata(PluginsOpenChanged));
+        public static readonly DependencyProperty SettingsOpenProperty = DependencyProperty.Register("SettingsOpen", typeof(bool), typeof(OptionsWindow), new UIPropertyMetadata(SettingsOpenChanged));
+        public static readonly DependencyProperty ConnectionsOpenProperty = DependencyProperty.Register("ConnectionsOpen", typeof(bool), typeof(OptionsWindow), new UIPropertyMetadata(ConnectionsOpenChanged));
+        public static readonly DependencyProperty SelectedElementProperty = DependencyProperty.Register("SelectedElement", typeof(RemoteElement), typeof(OptionsWindow));
 
         private static void PasswordRequiredChanged(DependencyObject sender, DependencyPropertyChangedEventArgs args)
         {
@@ -67,6 +72,36 @@ namespace TouchRemote.UI
             else
             {
                 Settings.Default.RequiredPassword = "";
+            }
+        }
+
+        private static void PluginsOpenChanged(DependencyObject sender, DependencyPropertyChangedEventArgs args)
+        {
+            var win = sender as OptionsWindow;
+            if (win.PluginsOpen)
+            {
+                win.SettingsOpen = false;
+                win.ConnectionsOpen = false;
+            }
+        }
+
+        private static void SettingsOpenChanged(DependencyObject sender, DependencyPropertyChangedEventArgs args)
+        {
+            var win = sender as OptionsWindow;
+            if (win.SettingsOpen)
+            {
+                win.PluginsOpen = false;
+                win.ConnectionsOpen = false;
+            }
+        }
+
+        private static void ConnectionsOpenChanged(DependencyObject sender, DependencyPropertyChangedEventArgs args)
+        {
+            var win = sender as OptionsWindow;
+            if (win.ConnectionsOpen)
+            {
+                win.SettingsOpen = false;
+                win.PluginsOpen = false;
             }
         }
 
@@ -94,6 +129,54 @@ namespace TouchRemote.UI
             }
         }
 
+        public bool PluginsOpen
+        {
+            get
+            {
+                return (bool)GetValue(PluginsOpenProperty);
+            }
+            set
+            {
+                SetValue(PluginsOpenProperty, value);
+            }
+        }
+
+        public bool SettingsOpen
+        {
+            get
+            {
+                return (bool)GetValue(SettingsOpenProperty);
+            }
+            set
+            {
+                SetValue(SettingsOpenProperty, value);
+            }
+        }
+
+        public bool ConnectionsOpen
+        {
+            get
+            {
+                return (bool)GetValue(ConnectionsOpenProperty);
+            }
+            set
+            {
+                SetValue(ConnectionsOpenProperty, value);
+            }
+        }
+
+        public RemoteElement SelectedElement
+        {
+            get
+            {
+                return (RemoteElement)GetValue(SelectedElementProperty);
+            }
+            set
+            {
+                SetValue(SelectedElementProperty, value);
+            }
+        }
+
         #endregion
 
         #region Public properties
@@ -118,6 +201,14 @@ namespace TouchRemote.UI
 
         public ICommand AddSliderCommand { get; private set; }
 
+        public ICommand AddBooleanLabelCommand { get; private set; }
+
+        public ICommand AddFloatLabelCommand { get; private set; }
+
+        public ICommand AddStringLabelCommand { get; private set; }
+
+        public ICommand AddStaticLabelCommand { get; private set; }
+
         public ICommand OpenPropertiesCommand { get; private set; }
 
         public ICommand RemoveButtonCommand { get; private set; }
@@ -127,6 +218,12 @@ namespace TouchRemote.UI
         public ICommand OpenUriCommand { get; private set; }
 
         public ICommand OpenPluginsDirectoryCommand { get; private set; }
+
+        public ICommand TogglePluginsFlyoutCommand { get; private set; }
+
+        public ICommand ToggleSettingsFlyoutCommand { get; private set; }
+
+        public ICommand ToggleConnectionsFlyoutCommand { get; private set; }
 
         #endregion
 
@@ -143,12 +240,18 @@ namespace TouchRemote.UI
             AddToggleButtonCommand = new DelegateCommand(AddToggleButton);
             AddBoundToggleButtonCommand = new DelegateCommand(AddBoundToggleButton);
             AddSliderCommand = new DelegateCommand(AddSlider);
+            AddBooleanLabelCommand = new DelegateCommand(AddBooleanLabel);
+            AddFloatLabelCommand = new DelegateCommand(AddFloatLabel);
+            AddStringLabelCommand = new DelegateCommand(AddStringLabel);
+            AddStaticLabelCommand = new DelegateCommand(AddStaticLabel);
             OpenPropertiesCommand = new DelegateCommand<RemoteElement>(ShowButtonProperties);
             RemoveButtonCommand = new DelegateCommand<RemoteElement>(RemoveElement);
             ShutdownCommand = new DelegateCommand(shutdownCallback);
             OpenUriCommand = new DelegateCommand<Uri>(OpenUri);
             OpenPluginsDirectoryCommand = new DelegateCommand(OpenPluginsDirectory);
-
+            TogglePluginsFlyoutCommand = new DelegateCommand(() => PluginsOpen = !PluginsOpen);
+            ToggleSettingsFlyoutCommand = new DelegateCommand(() => SettingsOpen = !SettingsOpen);
+            ToggleConnectionsFlyoutCommand = new DelegateCommand(() => ConnectionsOpen = !ConnectionsOpen);
             InitializeComponent();
 
             HashSet<IPAddress> addressSet = new HashSet<IPAddress>();
@@ -254,7 +357,60 @@ namespace TouchRemote.UI
             if (pt == null) pt = new Point(0, 0);
             RemoteControlService.AddElement(new RemoteSlider {
                 Id = RemoteControlService.CreateId(),
-                Label = "New Slider",
+                X = pt.X,
+                Y = pt.Y,
+                ZIndex = RemoteControlService.Count + 1
+            });
+        }
+
+        private void AddBooleanLabel()
+        {
+            var pt = contextMenuOpenedHere;
+            if (pt == null) pt = new Point(0, 0);
+            RemoteControlService.AddElement(new RemoteBooleanLabel
+            {
+                Id = RemoteControlService.CreateId(),
+                FalseText = "New Label",
+                TrueText = "New Label",
+                X = pt.X,
+                Y = pt.Y,
+                ZIndex = RemoteControlService.Count + 1
+            });
+        }
+
+        private void AddFloatLabel()
+        {
+            var pt = contextMenuOpenedHere;
+            if (pt == null) pt = new Point(0, 0);
+            RemoteControlService.AddElement(new RemoteFloatLabel
+            {
+                Id = RemoteControlService.CreateId(),
+                X = pt.X,
+                Y = pt.Y,
+                ZIndex = RemoteControlService.Count + 1
+            });
+        }
+
+        private void AddStringLabel()
+        {
+            var pt = contextMenuOpenedHere;
+            if (pt == null) pt = new Point(0, 0);
+            RemoteControlService.AddElement(new RemoteStringLabel
+            {
+                Id = RemoteControlService.CreateId(),
+                X = pt.X,
+                Y = pt.Y,
+                ZIndex = RemoteControlService.Count + 1
+            });
+        }
+
+        private void AddStaticLabel()
+        {
+            var pt = contextMenuOpenedHere;
+            if (pt == null) pt = new Point(0, 0);
+            RemoteControlService.AddElement(new RemoteLabel
+            {
+                Id = RemoteControlService.CreateId(),
                 X = pt.X,
                 Y = pt.Y,
                 ZIndex = RemoteControlService.Count + 1
@@ -315,32 +471,42 @@ namespace TouchRemote.UI
             contextMenuOpenedHere = Mouse.GetPosition(itemsControl);
         }
 
+        private void ItemsControl_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            SelectedElement = null;
+        }
+
         private void item_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            var item = sender as ContentPresenter;
+            var item = sender as ContentControl;
+            var dataItem = item.DataContext as RemoteElement;
             var canvas = item.FindAncestor<Canvas>();
 
-            startPoint = e.GetPosition(item);
+            SelectedElement = dataItem;
 
+            startPoint = e.GetPosition(item);
             movingItem = item;
 
             // Reset Z-index for all children so the dragging item is on top
-            int itemZIndex = Panel.GetZIndex(item);
+            int itemZIndex = dataItem.ZIndex;
             foreach (UIElement child in canvas.Children)
             {
                 int childZIndex = Panel.GetZIndex(child);
                 if (childZIndex > itemZIndex) Panel.SetZIndex(child, childZIndex - 1);
             }
-            Panel.SetZIndex(item, canvas.Children.Count);
+            dataItem.ZIndex = canvas.Children.Count;
 
             Mouse.Capture(item);
+
+            e.Handled = true;
         }
 
         private void item_PreviewMouseMove(object sender, MouseEventArgs e)
         {
             if (movingItem != null)
             {
-                var item = sender as ContentPresenter;
+                var item = sender as ContentControl;
+                var dataItem = item.DataContext as RemoteElement;
                 var canvas = item.FindAncestor<Canvas>();
 
                 double newLeft = e.GetPosition(canvas).X - startPoint.X - canvas.Margin.Left;
@@ -350,7 +516,7 @@ namespace TouchRemote.UI
                 // newLeft inside canvas left-border?
                 else if (newLeft < canvas.Margin.Left)
                     newLeft = canvas.Margin.Left;
-                item.SetValue(Canvas.LeftProperty, newLeft);
+                dataItem.X = newLeft;
 
                 double newTop = e.GetPosition(canvas).Y - startPoint.Y - canvas.Margin.Top;
                 // newTop inside canvas bottom-border?
@@ -359,7 +525,7 @@ namespace TouchRemote.UI
                 // newTop inside canvas top-border?
                 else if (newTop < canvas.Margin.Top)
                     newTop = canvas.Margin.Top;
-                item.SetValue(Canvas.TopProperty, newTop);
+                dataItem.Y = newTop;
             }
         }
 
@@ -367,6 +533,28 @@ namespace TouchRemote.UI
         {
             movingItem = null;
             Mouse.Capture(null);
+        }
+
+        private void window_PreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            if (SelectedElement != null)
+            {
+                switch (e.Key)
+                {
+                    case Key.Up:
+                        if (SelectedElement.Y >= 1) SelectedElement.Y--;
+                        break;
+                    case Key.Down:
+                        SelectedElement.Y++;
+                        break;
+                    case Key.Left:
+                        if (SelectedElement.X >= 1) SelectedElement.X--;
+                        break;
+                    case Key.Right:
+                        SelectedElement.X++;
+                        break;
+                }
+            }
         }
 
         #endregion

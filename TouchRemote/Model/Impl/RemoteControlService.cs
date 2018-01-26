@@ -123,7 +123,7 @@ namespace TouchRemote.Model.Impl
         {
             get
             {
-                return new List<WebControl>(_ElementDict.Values.Select(e => new WebControl(e.Id, (int)Math.Round(e.X), (int)Math.Round(e.Y), e.ZIndex, e.WebControlType, e.WebProperties)));
+                return new List<WebControl>(_ElementDict.Values.Select(e => e.ToWebControl()));
             }
         }
 
@@ -131,8 +131,7 @@ namespace TouchRemote.Model.Impl
         {
             if (_ElementDict.ContainsKey(guid))
             {
-                var e = _ElementDict[guid];
-                return new WebControl(e.Id, (int)Math.Round(e.X), (int)Math.Round(e.Y), e.ZIndex, e.WebControlType, e.WebProperties);
+                return _ElementDict[guid].ToWebControl();
             }
             return null;
         }
@@ -160,7 +159,7 @@ namespace TouchRemote.Model.Impl
             {
                 var e = sender as RemoteElement;
                 Save();
-                RemoteHub.GetBroadcastContext().UpdateControl(new WebControl(e.Id, (int)Math.Round(e.X), (int)Math.Round(e.Y), e.ZIndex, e.WebControlType, e.WebProperties));
+                RemoteHub.GetBroadcastContext().UpdateControl(e.ToWebControl());
                 if (e.BoundPropertyNames.Contains(args.PropertyName)) _Watcher.UpdateBoundProperties(e);
             }
         }
@@ -175,13 +174,13 @@ namespace TouchRemote.Model.Impl
             }
             catch (Exception ex)
             {
-                _Log.Error(string.Format("Failed to save \"Controls.xml\": {0}", ex.Message), ex);
+                _Log.Error(string.Format("Failed to save \"{0}\": {1}", _PersistenceManager.XmlFilename, ex.Message), ex);
             }
         }
 
         private void Load()
         {
-            _Log.Info("Loading \"Controls.xml\"...");
+            _Log.InfoFormat("Loading controls from \"{0}\"...", _PersistenceManager.XmlFilename);
             _RaiseElementsChanged = false;
             try
             {
@@ -193,10 +192,11 @@ namespace TouchRemote.Model.Impl
                 {
                     AddElement(e);
                 }
+                _Log.InfoFormat("Loaded {0} controls from \"{1}\".", _ElementDict.Count, _PersistenceManager.XmlFilename);
             }
             catch (Exception ex)
             {
-                _Log.Error(string.Format("Failed to load \"Controls.xml\": {0}", ex.Message), ex);
+                _Log.Error(string.Format("Failed to load \"{0}\": {1}", _PersistenceManager.XmlFilename, ex.Message), ex);
             }
             finally
             {

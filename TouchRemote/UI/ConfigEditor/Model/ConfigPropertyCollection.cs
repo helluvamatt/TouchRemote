@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.ObjectModel;
-using System.ComponentModel;
 using System.Reflection;
 using TouchRemote.Lib.Attributes;
 
@@ -19,17 +18,11 @@ namespace TouchRemote.UI.ConfigEditor.Model
                     var attr = propInfo.GetCustomAttribute<ConfigPropertyAttribute>();
                     if (attr != null)
                     {
-                        var attrDisplayName = propInfo.GetCustomAttribute<DisplayNameAttribute>();
-                        var attrDescription = propInfo.GetCustomAttribute<DescriptionAttribute>();
-                        var attrCategory = propInfo.GetCustomAttribute<CategoryAttribute>();
-                        var attrOrder = propInfo.GetCustomAttribute<PropertyOrderAttribute>();
-                        collection.Add(new ConfigProperty(propInfo, attrDisplayName != null ? attrDisplayName.DisplayName : propInfo.Name, attrDescription != null ? attrDescription.Description : "", attrCategory != null ? attrCategory.Category : null, attrOrder != null ? attrOrder.Order : int.MaxValue));
+                        collection.Add(ConfigProperty.Create(propInfo));
                     }
                 }
             }
             return collection;
         }
-
-        private ConfigPropertyCollection() { }
     }
 }

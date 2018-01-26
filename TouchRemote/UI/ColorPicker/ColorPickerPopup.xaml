@@ -1,0 +1,235 @@
+﻿<UserControl x:Class="TouchRemote.UI.ColorPicker.ColorPickerPopup"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:sys="clr-namespace:System;assembly=mscorlib"
+             xmlns:local="clr-namespace:TouchRemote.UI.ColorPicker"
+             mc:Ignorable="d" 
+             d:DesignHeight="30" d:DesignWidth="300"
+             x:Name="root">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="auto" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+        <Button x:Name="toggleButton" Click="toggleButton_Click">
+            <Rectangle Width="12" Height="12">
+                <Rectangle.Fill>
+                    <SolidColorBrush Color="{Binding ElementName=root, Path=SelectedColor}" />
+                </Rectangle.Fill>
+            </Rectangle>
+        </Button>
+        <TextBlock Margin="5,0,0,0" VerticalAlignment="Center" Grid.Column="1" Text="{Binding ElementName=root, Path=SelectedColor}" />
+        <Popup PlacementTarget="{Binding ElementName=toggleButton}" IsOpen="{Binding ElementName=root, Path=IsOpen}" StaysOpen="False">
+            <Border Background="{StaticResource ControlBackgroundBrush}" BorderThickness="1" BorderBrush="{StaticResource AccentColorBrush}" Padding="3">
+                <Border.Resources>
+                    <sys:Byte x:Key="rgbOn">0xFF</sys:Byte>
+                    <sys:Byte x:Key="rgbOff">0</sys:Byte>
+                    <sys:Double x:Key="hsvOn">1</sys:Double>
+                    <sys:Double x:Key="hsvOff">0</sys:Double>
+                    <local:ComponentColorConverter x:Key="componentColorConverter" />
+                    <local:HsvComponentColorConverter x:Key="hsvComponentColorConverter" />
+                    <DrawingBrush x:Key="alphaTestPattern" Stretch="None" TileMode="Tile" Viewport="0,0,10,10" ViewportUnits="Absolute">
+                        <DrawingBrush.Drawing>
+                            <DrawingGroup>
+                                <GeometryDrawing Geometry="M0,0 L10,0 10,10 0,10Z" Brush="#FFDEDEDE" />
+                                <GeometryDrawing Geometry="M0,5 L10,5 10,10, 5,10 5,0 0,0Z" Brush="#FFBCBCBC" />
+                            </DrawingGroup>
+                        </DrawingBrush.Drawing>
+                    </DrawingBrush>
+                </Border.Resources>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="48" />
+                        <ColumnDefinition Width="48" />
+                        <ColumnDefinition Width="48" />
+                        <ColumnDefinition Width="48" />
+                        <ColumnDefinition Width="48" />
+                        <ColumnDefinition Width="48" />
+                        <ColumnDefinition Width="48" />
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="auto" />
+                        <RowDefinition Height="150" />
+                        <RowDefinition Height="auto" />
+                    </Grid.RowDefinitions>
+                    <TextBlock Grid.Row="0" Grid.Column="0" HorizontalAlignment="Center">Hue</TextBlock>
+                    <TextBlock Grid.Row="0" Grid.Column="1" HorizontalAlignment="Center">Sat</TextBlock>
+                    <TextBlock Grid.Row="0" Grid.Column="2" HorizontalAlignment="Center">Val</TextBlock>
+                    <TextBlock Grid.Row="0" Grid.Column="3" HorizontalAlignment="Center">Red</TextBlock>
+                    <TextBlock Grid.Row="0" Grid.Column="4" HorizontalAlignment="Center">Green</TextBlock>
+                    <TextBlock Grid.Row="0" Grid.Column="5" HorizontalAlignment="Center">Blue</TextBlock>
+                    <TextBlock Grid.Row="0" Grid.Column="6" HorizontalAlignment="Center">Alpha</TextBlock>
+                    <Border Grid.Row="1" Grid.Column="0" Margin="3">
+                        <Border.Background>
+                            <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
+                                <GradientStop Color="#FFFF0000" Offset="1" />
+                                <GradientStop Color="#FFFFFF00" Offset="0.833" />
+                                <GradientStop Color="#FF00FF00" Offset="0.667" />
+                                <GradientStop Color="#FF00FFFF" Offset="0.5" />
+                                <GradientStop Color="#FF0000FF" Offset="0.333" />
+                                <GradientStop Color="#FFFF00FF" Offset="0.167" />
+                                <GradientStop Color="#FFFF0000" Offset="0" />
+                            </LinearGradientBrush>
+                        </Border.Background>
+                        <Slider Orientation="Vertical" HorizontalAlignment="Center" Value="{Binding ElementName=root, Path=Hue}" Minimum="0" Maximum="360" SmallChange="1" LargeChange="10" />
+                    </Border>
+                    <Border Grid.Row="1" Grid.Column="1" Margin="3">
+                        <Border.Background>
+                            <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
+                                <GradientStop Offset="0">
+                                    <GradientStop.Color>
+                                        <MultiBinding Converter="{StaticResource hsvComponentColorConverter}">
+                                            <Binding ElementName="root" Path="Hue" />
+                                            <Binding Source="{StaticResource hsvOn}" />
+                                            <Binding ElementName="root" Path="Val" />
+                                        </MultiBinding>
+                                    </GradientStop.Color>
+                                </GradientStop>
+                                <GradientStop Offset="1">
+                                    <GradientStop.Color>
+                                        <MultiBinding Converter="{StaticResource hsvComponentColorConverter}">
+                                            <Binding ElementName="root" Path="Hue" />
+                                            <Binding Source="{StaticResource hsvOff}" />
+                                            <Binding ElementName="root" Path="Val" />
+                                        </MultiBinding>
+                                    </GradientStop.Color>
+                                </GradientStop>
+                            </LinearGradientBrush>
+                        </Border.Background>
+                        <Slider Orientation="Vertical" HorizontalAlignment="Center" Value="{Binding ElementName=root, Path=Sat}" Minimum="0" Maximum="1" SmallChange="0.01" LargeChange="0.1" />
+                    </Border>
+                    <Border Grid.Row="1" Grid.Column="2" Margin="3">
+                        <Border.Background>
+                            <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
+                                <GradientStop Offset="0">
+                                    <GradientStop.Color>
+                                        <MultiBinding Converter="{StaticResource hsvComponentColorConverter}">
+                                            <Binding ElementName="root" Path="Hue" />
+                                            <Binding ElementName="root" Path="Sat" />
+                                            <Binding Source="{StaticResource hsvOn}" />
+                                        </MultiBinding>
+                                    </GradientStop.Color>
+                                </GradientStop>
+                                <GradientStop Offset="1">
+                                    <GradientStop.Color>
+                                        <MultiBinding Converter="{StaticResource hsvComponentColorConverter}">
+                                            <Binding ElementName="root" Path="Hue" />
+                                            <Binding ElementName="root" Path="Sat" />
+                                            <Binding Source="{StaticResource hsvOff}" />
+                                        </MultiBinding>
+                                    </GradientStop.Color>
+                                </GradientStop>
+                            </LinearGradientBrush>
+                        </Border.Background>
+                        <Slider Orientation="Vertical" HorizontalAlignment="Center" Value="{Binding ElementName=root, Path=Val}" Minimum="0" Maximum="1" SmallChange="0.01" LargeChange="0.1" />
+                    </Border>
+                    <Border Grid.Row="1" Grid.Column="3" Margin="3">
+                        <Border.Background>
+                            <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
+                                <GradientStop Offset="0">
+                                    <GradientStop.Color>
+                                        <MultiBinding Converter="{StaticResource componentColorConverter}">
+                                            <Binding Source="{StaticResource rgbOn}" />
+                                            <Binding ElementName="root" Path="G" />
+                                            <Binding ElementName="root" Path="B" />
+                                        </MultiBinding>
+                                    </GradientStop.Color>
+                                </GradientStop>
+                                <GradientStop Offset="1">
+                                    <GradientStop.Color>
+                                        <MultiBinding Converter="{StaticResource componentColorConverter}">
+                                            <Binding Source="{StaticResource rgbOff}" />
+                                            <Binding ElementName="root" Path="G" />
+                                            <Binding ElementName="root" Path="B" />
+                                        </MultiBinding>
+                                    </GradientStop.Color>
+                                </GradientStop>
+                            </LinearGradientBrush>
+                        </Border.Background>
+                        <Slider Orientation="Vertical" HorizontalAlignment="Center" Value="{Binding ElementName=root, Path=R}" SmallChange="1" LargeChange="5" Minimum="0" Maximum="255" />
+                    </Border>
+                    <Border Grid.Row="1" Grid.Column="4" Margin="3">
+                        <Border.Background>
+                            <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
+                                <GradientStop Offset="0">
+                                    <GradientStop.Color>
+                                        <MultiBinding Converter="{StaticResource componentColorConverter}">
+                                            <Binding ElementName="root" Path="R" />
+                                            <Binding Source="{StaticResource rgbOn}" />
+                                            <Binding ElementName="root" Path="B" />
+                                        </MultiBinding>
+                                    </GradientStop.Color>
+                                </GradientStop>
+                                <GradientStop Offset="1">
+                                    <GradientStop.Color>
+                                        <MultiBinding Converter="{StaticResource componentColorConverter}">
+                                            <Binding ElementName="root" Path="R" />
+                                            <Binding Source="{StaticResource rgbOff}" />
+                                            <Binding ElementName="root" Path="B" />
+                                        </MultiBinding>
+                                    </GradientStop.Color>
+                                </GradientStop>
+                            </LinearGradientBrush>
+                        </Border.Background>
+                        <Slider Orientation="Vertical" HorizontalAlignment="Center" Value="{Binding ElementName=root, Path=G}" SmallChange="1" LargeChange="5" Minimum="0" Maximum="255" />
+                    </Border>
+                    <Border Grid.Row="1" Grid.Column="5" Margin="3">
+                        <Border.Background>
+                            <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
+                                <GradientStop Offset="0">
+                                    <GradientStop.Color>
+                                        <MultiBinding Converter="{StaticResource componentColorConverter}">
+                                            <Binding ElementName="root" Path="R" />
+                                            <Binding ElementName="root" Path="G" />
+                                            <Binding Source="{StaticResource rgbOn}" />
+                                        </MultiBinding>
+                                    </GradientStop.Color>
+                                </GradientStop>
+                                <GradientStop Offset="1">
+                                    <GradientStop.Color>
+                                        <MultiBinding Converter="{StaticResource componentColorConverter}">
+                                            <Binding ElementName="root" Path="R" />
+                                            <Binding ElementName="root" Path="G" />
+                                            <Binding Source="{StaticResource rgbOff}" />
+                                        </MultiBinding>
+                                    </GradientStop.Color>
+                                </GradientStop>
+                            </LinearGradientBrush>
+                        </Border.Background>
+                        <Slider Orientation="Vertical" HorizontalAlignment="Center" Value="{Binding ElementName=root, Path=B}" SmallChange="1" LargeChange="5" Minimum="0" Maximum="255" />
+                    </Border>
+                    <Border Grid.Row="1" Grid.Column="6" Margin="3" Background="{StaticResource alphaTestPattern}">
+                        <Grid>
+                            <Rectangle>
+                                <Rectangle.Fill>
+                                    <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
+                                        <GradientStop Offset="0">
+                                            <GradientStop.Color>
+                                                <MultiBinding Converter="{StaticResource componentColorConverter}">
+                                                    <Binding ElementName="root" Path="R" />
+                                                    <Binding ElementName="root" Path="G" />
+                                                    <Binding ElementName="root" Path="B" />
+                                                </MultiBinding>
+                                            </GradientStop.Color>
+                                        </GradientStop>
+                                        <GradientStop Color="Transparent" Offset="1" />
+                                    </LinearGradientBrush>
+                                </Rectangle.Fill>
+                            </Rectangle>
+                            <Slider Orientation="Vertical" HorizontalAlignment="Center" Value="{Binding ElementName=root, Path=A}" SmallChange="1" LargeChange="5" Minimum="0" Maximum="255" />
+                        </Grid>
+                    </Border>
+                    <TextBox Grid.Row="2" Grid.Column="0" Text="{Binding ElementName=root, Path=Hue, StringFormat={}{0:##0.##}}" Margin="3" />
+                    <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding ElementName=root, Path=Sat, StringFormat={}{0:0.###}}" Margin="3" />
+                    <TextBox Grid.Row="2" Grid.Column="2" Text="{Binding ElementName=root, Path=Val, StringFormat={}{0:0.###}}" Margin="3" />
+                    <TextBox Grid.Row="2" Grid.Column="3" Text="{Binding ElementName=root, Path=R}" Margin="3" />
+                    <TextBox Grid.Row="2" Grid.Column="4" Text="{Binding ElementName=root, Path=G}" Margin="3" />
+                    <TextBox Grid.Row="2" Grid.Column="5" Text="{Binding ElementName=root, Path=B}" Margin="3" />
+                    <TextBox Grid.Row="2" Grid.Column="6" Text="{Binding ElementName=root, Path=A}" Margin="3" />
+                </Grid>
+            </Border>
+        </Popup>
+    </Grid>
+</UserControl>

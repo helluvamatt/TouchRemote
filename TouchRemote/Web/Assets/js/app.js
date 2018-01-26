@@ -20,7 +20,21 @@ const UnknownControl = Vue.component('Unknown', {
 
 const ButtonControl = Vue.component('Button', {
     template: '#tpl_button',
-    props: ['Id', 'Type', 'X', 'Y', 'ZIndex', 'Properties'],
+    data: function () {
+        return {
+            isMouseOver: false
+        };
+    },
+    props: ['Id', 'Type', 'Styles', 'Properties'],
+    computed: {
+        realStyles: function () {
+            var hoverStyles = {
+                'backgroundColor': this.Properties.ActiveBackgroundColor,
+                'color': this.Properties.ActiveColor
+            };
+            return $.extend({}, this.Styles, this.isMouseOver ? hoverStyles : {});
+        }
+    },
     methods: {
         emitClicked: function () {
             this.$emit('control-event', 'click');
@@ -30,9 +44,35 @@ const ButtonControl = Vue.component('Button', {
 
 const SliderControl = Vue.component('Slider', {
     template: '#tpl_slider',
-    props: ['Id', 'Type', 'X', 'Y', 'ZIndex', 'Properties'],
+    props: ['Id', 'Type', 'Styles', 'Properties'],
     data: function () {
         return {};
+    },
+    computed: {
+        wrapperStyles: function () {
+            if (this.Styles.width !== 'auto' && this.Styles.height !== 'auto') {
+                if (this.Properties.Orientation === 'vertical') {
+                    var height = Number.parseFloat(this.Styles.height) - 10;
+                    return { 'height': height + 'px' };
+                } else {
+                    var width = Number.parseFloat(this.Styles.width) - 10;
+                    return { 'width': width + 'px' };
+                }
+            }
+            return {};
+        },
+        inputRangeStyles: function () {
+            if (this.Styles.width !== 'auto' && this.Styles.height !== 'auto') {
+                var length = Number.parseFloat(this.Properties.Orientation === 'vertical' ? this.Styles.height : this.Styles.width) - 10;
+                var styles = { 'width': length + 'px' };
+                if (this.Properties.Orientation === 'vertical') {
+                    var half = length / 2;
+                    styles['transformOrigin'] = half + 'px ' + half + 'px';
+                }
+                return styles;
+            }
+            return {};
+        }
     },
     methods: {
         valueChanged: function (e) {
@@ -40,6 +80,11 @@ const SliderControl = Vue.component('Slider', {
             this.$emit('control-event', 'value-changed', value);
         }
     }
+});
+
+const LabelControl = Vue.component('Label', {
+    template: '#tpl_label',
+    props: ['Id', 'Type', 'Styles', 'Properties']
 });
 
 const Controls = Vue.component('controls', {

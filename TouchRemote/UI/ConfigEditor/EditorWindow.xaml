@@ -3,11 +3,9 @@
                 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
                 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-                xmlns:fa="http://schemas.fontawesome.io/icons/"
                 xmlns:ma="http://metro.mahapps.com/winfx/xaml/controls"
-                xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
+                xmlns:pg="http://schemas.denisvuyka.wordpress.com/wpfpropertygrid"
                 xmlns:sys="clr-namespace:System;assembly=mscorlib"
-                xmlns:local="clr-namespace:TouchRemote.UI.ConfigEditor"
                 xmlns:uc="clr-namespace:TouchRemote.Utils.Converters"
                 mc:Ignorable="d"
                 x:ClassModifier="internal"
@@ -19,22 +17,22 @@
                 ShowMaxRestoreButton="False"
                 ResizeMode="CanResizeWithGrip"
                 BorderBrush="{DynamicResource AccentColorBrush}"
-                BorderThickness="1">
+                BorderThickness="1" Padding="5">
     <ma:MetroWindow.Resources>
         <uc:EnumValuesConverter x:Key="enumValuesConverter" />
     </ma:MetroWindow.Resources>
-    <xctk:PropertyGrid x:Name="_PropertyGrid" SelectedObject="{Binding SelectedObject}" ShowSortOptions="False" ShowSearchBox="False" ShowTitle="False" IsMiscCategoryLabelHidden="True" AutoGenerateProperties="False">
-        <xctk:PropertyGrid.EditorDefinitions>
-            <xctk:EditorTemplateDefinition>
-                <xctk:EditorTemplateDefinition.TargetProperties>
-                    <xctk:TargetPropertyType Type="{x:Type sys:Enum}" />
-                </xctk:EditorTemplateDefinition.TargetProperties>
-                <xctk:EditorTemplateDefinition.EditingTemplate>
+    <pg:PropertyGrid x:Name="_PropertyGrid" PropertyFilterVisibility="Collapsed">
+        <pg:PropertyGrid.Layout>
+            <pg:CategorizedLayout />
+        </pg:PropertyGrid.Layout>
+        <pg:PropertyGrid.Editors>
+            <pg:TypeEditor EditedType="{x:Type sys:Enum}">
+                <pg:TypeEditor.InlineTemplate>
                     <DataTemplate>
                         <ComboBox ItemsSource="{Binding Value, Converter={StaticResource enumValuesConverter}}" SelectedItem="{Binding Value}" />
                     </DataTemplate>
-                </xctk:EditorTemplateDefinition.EditingTemplate>
-            </xctk:EditorTemplateDefinition>
-        </xctk:PropertyGrid.EditorDefinitions>
-    </xctk:PropertyGrid>
+                </pg:TypeEditor.InlineTemplate>
+            </pg:TypeEditor>
+        </pg:PropertyGrid.Editors>
+    </pg:PropertyGrid>
 </ma:MetroWindow>

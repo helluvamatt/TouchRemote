@@ -7,6 +7,8 @@ using TouchRemote.Web.Models;
 using TouchRemote.Utils;
 using System.Xml.Serialization;
 using System.Xml;
+using System.Windows;
+using System.Windows.Media;
 
 namespace TouchRemote.Model.Persistence.Controls
 {
@@ -65,6 +67,162 @@ namespace TouchRemote.Model.Persistence.Controls
             }
         }
 
+        private bool _AutoSize;
+        [XmlIgnore]
+        [Category("Appearance")]
+        [DisplayName("AutoSize")]
+        [Description("Whether the control will grow and shrink based on its contents")]
+        public bool AutoSize
+        {
+            get
+            {
+                return _AutoSize;
+            }
+            set
+            {
+                Width = value ? Double.NaN : ActualWidth;
+                Height = value ? Double.NaN : ActualHeight;
+                ChangeAndNotify(ref _AutoSize, value, () => AutoSize);
+            }
+        }
+
+        private double _Width;
+        //[Category("Appearance")]
+        //[DisplayName("Width")]
+        //[Description("Control width, ignored if AutoSize is true")]
+        [Browsable(false)]
+        [XmlIgnore]
+        public double Width
+        {
+            get
+            {
+                return _Width;
+            }
+            set
+            {
+                ChangeAndNotify(ref _Width, value, () => Width);
+            }
+        }
+
+        private double _Height;
+        //[Category("Appearance")]
+        //[DisplayName("Height")]
+        //[Description("Control height, ignored if AutoSize is true")]
+        [Browsable(false)]
+        [XmlIgnore]
+        public double Height
+        {
+            get
+            {
+                return _Height;
+            }
+            set
+            {
+                ChangeAndNotify(ref _Height, value, () => Height);
+            }
+        }
+
+        private TextAlignment _TextAlignment;
+        [Category("Appearance")]
+        [DisplayName("Text Alignment")]
+        [Description("Horizontal text alignment")]
+        [XmlAttribute]
+        public TextAlignment TextAlignment
+        {
+            get
+            {
+                return _TextAlignment;
+            }
+            set
+            {
+                ChangeAndNotify(ref _TextAlignment, value, () => TextAlignment);
+            }
+        }
+
+        private Color _Color;
+        [Category("Appearance")]
+        [DisplayName("Color")]
+        [Description("Foreground/text color")]
+        [XmlIgnore]
+        public Color Color
+        {
+            get
+            {
+                return _Color;
+            }
+            set
+            {
+                ChangeAndNotify(ref _Color, value, () => Color);
+            }
+        }
+
+        [Browsable(false)]
+        [XmlAttribute("Color")]
+        public string ColorStr
+        {
+            get
+            {
+                return Color.ToHexString();
+            }
+            set
+            {
+                Color = (Color)ColorConverter.ConvertFromString(value);
+            }
+        }
+
+        private Color _BackgroundColor;
+        [Category("Appearance")]
+        [DisplayName("Background")]
+        [Description("Control background color")]
+        [XmlIgnore]
+        public Color BackgroundColor
+        {
+            get
+            {
+                return _BackgroundColor;
+            }
+            set
+            {
+                ChangeAndNotify(ref _BackgroundColor, value, () => BackgroundColor);
+            }
+        }
+
+        [Browsable(false)]
+        [XmlAttribute("BackgroundColor")]
+        public string BackgroundColorStr
+        {
+            get
+            {
+                return BackgroundColor.ToHexString();
+            }
+            set
+            {
+                BackgroundColor = (Color)ColorConverter.ConvertFromString(value);
+            }
+        }
+
+        private Font _Font;
+        [Category("Appearance")]
+        [DisplayName("Font")]
+        [Description("Label font")]
+        [XmlElement("RemoteElement.Font")]
+        public Font Font
+        {
+            get
+            {
+                return _Font;
+            }
+            set
+            {
+                ChangeAndNotifyDependency(ref _Font, value, () => Font, OnFontChanged);
+            }
+        }
+
+        private void OnFontChanged(object sender, PropertyChangedEventArgs args)
+        {
+            Notify(() => Font);
+        }
+
         #endregion
 
         [Browsable(false)]
@@ -77,7 +235,58 @@ namespace TouchRemote.Model.Persistence.Controls
         [XmlAttribute]
         public Guid Id { get; set; }
 
+        [Browsable(false)]
+        [XmlAttribute]
+        public string Size
+        {
+            get
+            {
+                return AutoSize ? null : string.Format("{0},{1}", Width, Height);
+            }
+            set
+            {
+                if (!string.IsNullOrEmpty(value))
+                {
+                    string[] args = value.Split(',');
+                    if (args.Length == 2)
+                    {
+                        double width, height;
+                        if (double.TryParse(args[0], out width) && double.TryParse(args[1], out height))
+                        {
+                            ActualWidth = width;
+                            ActualHeight = height;
+                            AutoSize = false;
+                            return;
+                        }
+                    }
+                }
+                AutoSize = true;
+            }
+        }
+
+        [Browsable(false)]
+        [XmlIgnore]
+        public double ActualWidth { get; set; }
+
+        [Browsable(false)]
+        [XmlIgnore]
+        public double ActualHeight { get; set; }
+
+        public RemoteElement()
+        {
+            _AutoSize = true;
+            _Width = _Height = Double.NaN;
+            _Color = Colors.Black;
+            _BackgroundColor = Colors.White;
+            _TextAlignment = TextAlignment.Left;
+            _Font = new Font();
+        }
+
         #region Abstract interface
+
+        [Browsable(false)]
+        [XmlIgnore]
+        public abstract Dictionary<string, string> ControlStyle { get; }
 
         [Browsable(false)]
         [XmlIgnore]

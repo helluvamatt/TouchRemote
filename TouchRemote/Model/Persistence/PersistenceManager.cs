@@ -24,6 +24,8 @@ namespace TouchRemote.Model.Persistence
         private FixedSizedQueue<string> _SaveQueue;
         private readonly ReaderWriterLockSlim lockObj = new ReaderWriterLockSlim(LockRecursionPolicy.NoRecursion);
 
+        public string XmlFilename => _XmlFilename;
+
         public PersistenceManager(PluginManager pluginManager, string xmlFilename)
         {
             _Log = LogManager.GetLogger(GetType());

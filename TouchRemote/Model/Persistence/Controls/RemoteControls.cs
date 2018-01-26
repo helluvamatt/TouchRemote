@@ -14,6 +14,10 @@ namespace TouchRemote.Model.Persistence.Controls
         [XmlElement("Button", typeof(RemoteButton))]
         [XmlElement("Slider", typeof(RemoteSlider))]
         [XmlElement("ToggleButton", typeof(RemoteToggleButton))]
+        [XmlElement("LabelBoolean", typeof(RemoteBooleanLabel))]
+        [XmlElement("LabelFloat", typeof(RemoteFloatLabel))]
+        [XmlElement("LabelString", typeof(RemoteStringLabel))]
+        [XmlElement("Label", typeof(RemoteLabel))]
         public RemoteElement[] Items
         {
             get

@@ -5,7 +5,6 @@
                 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
                 xmlns:ma="http://metro.mahapps.com/winfx/xaml/controls"
                 xmlns:fa="http://schemas.fontawesome.io/icons/"
-                xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
                 xmlns:local="clr-namespace:TouchRemote.UI.IconPicker"
                 xmlns:model="clr-namespace:TouchRemote.Model.Persistence.Controls"
                 mc:Ignorable="d"
@@ -19,18 +18,15 @@
                 ResizeMode="CanResizeWithGrip"
                 BorderBrush="{DynamicResource AccentColorBrush}"
                 BorderThickness="1">
-    <ma:MetroWindow.Resources>
-        <Style TargetType="RadioButton" BasedOn="{StaticResource MetroRadioButton}">
-            <Setter Property="Margin" Value="8" />
-        </Style>
-    </ma:MetroWindow.Resources>
     <Grid>
         <Grid.RowDefinitions>
+            <RowDefinition Height="auto" />
             <RowDefinition Height="*" />
             <RowDefinition Height="*" />
             <RowDefinition Height="auto" />
         </Grid.RowDefinitions>
-        <GroupBox Grid.Row="0" Header="Built-in Icons">
+        <Button Grid.Row="0" HorizontalAlignment="Left" Command="{Binding SetIconNullCommand}" Margin="5">Clear</Button>
+        <GroupBox Grid.Row="1" Header="Built-in Icons">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*" />
@@ -51,10 +47,10 @@
                         </DataTemplate>
                     </ListBox.ItemTemplate>
                 </ListBox>
-                <xctk:ColorPicker Grid.Row="1" Margin="5" DisplayColorAndName="True" AvailableColorsSortingMode="HueSaturationBrightness" SelectedColor="{Binding BuiltinIconColor}" UsingAlphaChannel="True" ButtonStyle="{StaticResource MetroButton}" />
+                <!--<xctk:ColorPicker Grid.Row="1" Margin="5" DisplayColorAndName="True" AvailableColorsSortingMode="HueSaturationBrightness" SelectedColor="{Binding BuiltinIconColor}" UsingAlphaChannel="True" ButtonStyle="{StaticResource MetroButton}" />-->
             </Grid>
         </GroupBox>
-        <GroupBox Grid.Row="1" Header="Custom Icons">
+        <GroupBox Grid.Row="2" Header="Custom Icons">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*" />
@@ -78,6 +74,6 @@
                 </TextBlock>
             </Grid>
         </GroupBox>
-        <Image Grid.Row="2" HorizontalAlignment="Center" Width="64" Height="64" Margin="6" Source="{Binding IconHolder.Source.Image}" /> 
+        <Image Grid.Row="3" HorizontalAlignment="Center" Width="64" Height="64" Margin="6" Source="{Binding IconHolder.Source.Image}" /> 
     </Grid>
 </ma:MetroWindow>

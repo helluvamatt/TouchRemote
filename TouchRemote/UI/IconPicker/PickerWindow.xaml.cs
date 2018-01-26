@@ -23,6 +23,8 @@ namespace TouchRemote.UI.IconPicker
 
         public ICommand BrowseCommand { get; private set; }
 
+        public ICommand SetIconNullCommand { get; private set; }
+
         #region Dependency properties
 
         #region IconHolder
@@ -135,22 +137,31 @@ namespace TouchRemote.UI.IconPicker
             IconHolder = iconHolder ?? throw new ArgumentNullException("iconHolder");
             IconManager = iconManager ?? throw new ArgumentNullException("iconManager");
             BrowseCommand = new DelegateCommand(DoBrowse);
+            SetIconNullCommand = new DelegateCommand(SetIconNull);
 
             // Setup dependency property initial values
-            BuiltinIconColor = IconHolder.Source is BuiltinIconSource ? (Color)ColorConverter.ConvertFromString(((BuiltinIconSource)IconHolder.Source).Color) : Colors.Black;
-            var builtinSource = IconHolder.Source as BuiltinIconSource;
-            if (builtinSource != null)
+            BuiltinIconColor = Colors.Black;
+            if (IconHolder.Source != null)
             {
-                var icon = FontAwesomeIcon.None;
-                var iconStr = builtinSource.Icon;
-                if (!string.IsNullOrEmpty(iconStr) && Enum.TryParse(iconStr, out icon))
+                var builtinSource = IconHolder.Source as BuiltinIconSource;
+                if (builtinSource != null)
                 {
-                    SelectedBuiltinIcon = new BuiltinIcon(icon);
+                    BuiltinIconColor = (Color)ColorConverter.ConvertFromString(builtinSource.Color);
+                    var icon = FontAwesomeIcon.None;
+                    var iconStr = builtinSource.Icon;
+                    if (!string.IsNullOrEmpty(iconStr) && Enum.TryParse(iconStr, out icon) && icon != FontAwesomeIcon.None)
+                    {
+                        SelectedBuiltinIcon = new BuiltinIcon(icon);
+                    }
+                    else
+                    {
+                        SetIconNull();
+                    }
                 }
-            }
-            else
-            {
-                SelectedCustomIcon = IconHolder;
+                else
+                {
+                    SelectedCustomIcon = IconHolder;
+                }
             }
             InitializeComponent();
         }
@@ -174,6 +185,14 @@ namespace TouchRemote.UI.IconPicker
                     MessageBox.Show(this, "There is already a custom icon with that file name.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
+        }
+
+        private void SetIconNull()
+        {
+            SelectedBuiltinIcon = null;
+            SelectedCustomIcon = null;
+            var nullIcon = new IconHolder() { Name = "(None)" };
+            IconHolder.Apply(nullIcon);
         }
 
         private void ListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)

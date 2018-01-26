@@ -9,9 +9,11 @@
                  xmlns:vm="clr-namespace:TouchRemote.ViewModels"
                  xmlns:model="clr-namespace:TouchRemote.Model"
                  xmlns:p="clr-namespace:TouchRemote.Properties"
+                 xmlns:utils="clr-namespace:TouchRemote.Utils"
                  xmlns:uc="clr-namespace:TouchRemote.Utils.Converters"
                  xmlns:vr="clr-namespace:TouchRemote.Utils.ValidationRules"
                  xmlns:controls="clr-namespace:TouchRemote.Model.Persistence.Controls"
+                 xmlns:ui="clr-namespace:TouchRemote.UI.Controls"
                  mc:Ignorable="d"
                  x:ClassModifier="internal"
                  Title="Touch Remote" Width="800" Height="600" MinWidth="400" MinHeight="300"
@@ -19,7 +21,10 @@
                  DataContext="{Binding RelativeSource={RelativeSource Self}}"
                  ResizeMode="CanResizeWithGrip"
                  BorderBrush="{DynamicResource AccentColorBrush}"
-                 BorderThickness="1">
+                 BorderThickness="1"
+                 RightWindowCommandsOverlayBehavior="Flyouts"
+                 WindowButtonCommandsOverlayBehavior="Flyouts"
+                 PreviewKeyDown="window_PreviewKeyDown">
     <mac:MetroWindow.Resources>
         <DataTemplate x:Key="tabItemTemplate">
             <Grid x:Name="Root" HorizontalAlignment="Left">
@@ -39,96 +44,229 @@
     </mac:MetroWindow.Resources>
     <mac:MetroWindow.RightWindowCommands>
         <mac:WindowCommands>
-            <Button Content="shutdown" Command="{Binding ShutdownCommand}" />
+            <Button Content="stop server" Command="{Binding ShutdownCommand}" />
         </mac:WindowCommands>
     </mac:MetroWindow.RightWindowCommands>
-    <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="*" />
-            <RowDefinition Height="auto" />
-        </Grid.RowDefinitions>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="auto" />
-            <ColumnDefinition Width="*" />
-        </Grid.ColumnDefinitions>
-        <fa:ImageAwesome Grid.Row="1" Grid.Column="0">
-            <fa:ImageAwesome.Style>
-                <Style TargetType="fa:ImageAwesome">
-                    <Setter Property="Width" Value="24" />
-                    <Setter Property="Height" Value="24" />
-                    <Setter Property="Margin" Value="4" />
-                    <Setter Property="Icon" Value="ExclamationTriangle" />
-                    <Style.Triggers>
-                        <DataTrigger Binding="{Binding WebServer.Status}" Value="Ready">
-                            <Setter Property="Icon" Value="Signal" />
-                        </DataTrigger>
-                    </Style.Triggers>
-                </Style>
-            </fa:ImageAwesome.Style>
-        </fa:ImageAwesome>
-        <TextBlock Grid.Row="1" Grid.Column="1" VerticalAlignment="Center">
-            <TextBlock.Style>
-                <Style TargetType="TextBlock">
-                    <Setter Property="Visibility" Value="Collapsed" />
-                    <Style.Triggers>
-                        <DataTrigger Binding="{Binding WebServer.Status}" Value="Ready">
-                            <Setter Property="Visibility" Value="Visible" />
-                        </DataTrigger>
-                    </Style.Triggers>
-                </Style>
-            </TextBlock.Style>
-            <Span>To use the remote, navigate to: </Span>
-            <Hyperlink Command="{Binding OpenUriCommand}" CommandParameter="{Binding WebServer.ListenAddresses[0]}">
-                <Run Text="{Binding WebServer.ListenAddresses[0]}" />
-            </Hyperlink>
-        </TextBlock>
-        <TabControl Grid.Row="0" Grid.ColumnSpan="3" TabStripPlacement="Left">
-            <TabItem vm:IconTabItem.Icon="Tachometer"  Header="Status" HeaderTemplate="{StaticResource tabItemTemplate}">
+    <mac:MetroWindow.Flyouts>
+        <mac:FlyoutsControl>
+            <mac:Flyout Header="Plugins" Theme="Light" Width="400" Position="Right" IsOpen="{Binding PluginsOpen}">
                 <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="*" />
-                    </Grid.ColumnDefinitions>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="auto" />
-                        <RowDefinition Height="auto" />
                         <RowDefinition Height="*" />
-                    </Grid.RowDefinitions>
-                    <Grid Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="2">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="auto" />
-                            <ColumnDefinition Width="*" />
-                        </Grid.ColumnDefinitions>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="auto" />
-                            <RowDefinition Height="*" />
-                        </Grid.RowDefinitions>
-                        <fa:ImageAwesome Grid.Row="0" Grid.Column="0" Grid.RowSpan="2" Margin="8" Width="84" Height="84">
-                            <fa:ImageAwesome.Style>
-                                <Style TargetType="fa:ImageAwesome">
+                        <RowDefinition>
+                            <RowDefinition.Style>
+                                <Style TargetType="RowDefinition">
+                                    <Setter Property="Height" Value="auto" />
                                     <Style.Triggers>
-                                        <DataTrigger Binding="{Binding WebServer.Status}" Value="Stopped">
-                                            <Setter Property="Icon" Value="ExclamationTriangle" />
-                                            <Setter Property="Spin" Value="False" />
-                                        </DataTrigger>
-                                        <DataTrigger Binding="{Binding WebServer.Status}" Value="Starting">
-                                            <Setter Property="Icon" Value="Refresh" />
-                                            <Setter Property="Spin" Value="True" />
-                                        </DataTrigger>
-                                        <DataTrigger Binding="{Binding WebServer.Status}" Value="Ready">
-                                            <Setter Property="Icon" Value="Signal" />
-                                            <Setter Property="Spin" Value="False" />
+                                        <DataTrigger Binding="{Binding SelectedPlugin}" Value="{x:Null}">
+                                            <Setter Property="Height" Value="0" />
                                         </DataTrigger>
                                     </Style.Triggers>
                                 </Style>
-                            </fa:ImageAwesome.Style>
-                        </fa:ImageAwesome>
-                        <TextBlock Grid.Row="0" Grid.Column="1" FontSize="{DynamicResource HeaderFontSize}" Text="{Binding WebServer.Status}" />
-                        <TextBlock Grid.Row="1" Grid.Column="1" Visibility="{Binding WebServer.Error, Converter={StaticResource isNullToVisibilityConverter}}" Foreground="Red" Text="{Binding WebServer.Error.Message}" />
-                    </Grid>
-                    <TextBlock Grid.Row="1" Grid.Column="0" FontSize="{DynamicResource SubHeaderFontSize}">Connections</TextBlock>
-                    <TextBlock Grid.Row="1" Grid.Column="1" FontSize="{DynamicResource SubHeaderFontSize}">Listen Addresses</TextBlock>
-                    <ItemsControl Grid.Row="2" Grid.Column="0" ItemsSource="{Binding Path=WebServer.Clients}" FocusVisualStyle="{x:Null}">
+                            </RowDefinition.Style>
+                        </RowDefinition>
+                    </Grid.RowDefinitions>
+                    <TextBlock Grid.Row="0" Padding="5" TextWrapping="Wrap">
+                        <Span FontWeight="Bold">Plugins Directory:</Span>
+                        <LineBreak />
+                        <Hyperlink Command="{Binding OpenPluginsDirectoryCommand}"><Run Text="{Binding PluginManager.PluginsDirectory, Mode=OneTime}" /></Hyperlink>
+                    </TextBlock>
+                    <ListBox Grid.Row="1" SelectedItem="{Binding SelectedPlugin}" ItemsSource="{Binding PluginManager.Plugins}">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock VerticalAlignment="Center" FontSize="20px">
+                                        <fa:FontAwesome>
+                                            <fa:FontAwesome.Style>
+                                                <Style TargetType="fa:FontAwesome">
+                                                    <Setter Property="Width" Value="24" />
+                                                    <Setter Property="Icon">
+                                                        <Setter.Value>
+                                                            <Binding Converter="{StaticResource faClassNameConverter}" Path="Icon" />
+                                                        </Setter.Value>
+                                                    </Setter>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding Icon}" Value="{x:Null}">
+                                                            <Setter Property="Icon" Value="Cubes" />
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </fa:FontAwesome.Style>
+                                        </fa:FontAwesome>
+                                    </TextBlock>
+                                    <TextBlock VerticalAlignment="Center" Margin="4,0,0,0" Text="{Binding Name}" />
+                                </StackPanel>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                    <GroupBox Header="Plugin Details" Grid.Row="2">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="1*" />
+                                <ColumnDefinition Width="2*" />
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="auto" />
+                                <RowDefinition Height="auto" />
+                                <RowDefinition Height="auto" />
+                                <RowDefinition Height="auto" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+                            <fa:ImageAwesome Width="64" Height="64" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2">
+                                <fa:ImageAwesome.Style>
+                                    <Style TargetType="fa:ImageAwesome">
+                                        <Setter Property="Icon">
+                                            <Setter.Value>
+                                                <Binding Converter="{StaticResource faClassNameConverter}" Path="SelectedPlugin.Icon" />
+                                            </Setter.Value>
+                                        </Setter>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding SelectedPlugin.Icon}" Value="{x:Null}">
+                                                <Setter Property="Icon" Value="Cubes" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </fa:ImageAwesome.Style>
+                            </fa:ImageAwesome>
+                            <Label Grid.Row="1" Grid.Column="0" FontWeight="Bold" VerticalContentAlignment="Top" HorizontalAlignment="Right">Plugin Name</Label>
+                            <Label Grid.Row="2" Grid.Column="0" FontWeight="Bold" VerticalAlignment="Top" HorizontalAlignment="Right">Description</Label>
+                            <Label Grid.Row="3" Grid.Column="0" FontWeight="Bold" VerticalAlignment="Top" HorizontalAlignment="Right">Version</Label>
+                            <TextBlock Grid.Row="1" Grid.Column="1" VerticalAlignment="Top" Padding="5" Text="{Binding SelectedPlugin.Name}" />
+                            <TextBlock Grid.Row="2" Grid.Column="1" VerticalAlignment="Top" Padding="5" Text="{Binding SelectedPlugin.Description}" TextWrapping="WrapWithOverflow" />
+                            <TextBlock Grid.Row="3" Grid.Column="1" VerticalAlignment="Top" Padding="5" Text="{Binding SelectedPlugin.Version}" />
+                        </Grid>
+                    </GroupBox>
+                </Grid>
+            </mac:Flyout>
+            <mac:Flyout Header="Settings" Theme="Light" Width="400" Position="Right" IsOpen="{Binding SettingsOpen}">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" FocusVisualStyle="{x:Null}">
+                    <StackPanel Orientation="Vertical">
+                        <GroupBox Header="Server" Padding="6">
+                            <StackPanel Orientation="Vertical">
+                                <Label Foreground="Red">
+                                    <TextBlock TextWrapping="Wrap">
+                                        <Span FontWeight="Bold">Note:</Span>
+                                        <Span>Changing the listen interfaces and port will require a restart of Touch Remote.</Span>
+                                    </TextBlock>
+                                </Label>
+                                <Label FontWeight="Bold">Interface:</Label>
+                                <RadioButton IsChecked="{Binding Source={x:Static p:Settings.Default}, Path=ListenAddressesMode, Converter={StaticResource enumBooleanConverter}, ConverterParameter=LOCAL_ONLY}" GroupName="ListenInterfaceMode" Margin="0,6,0,0" Content="Localhost (most secure, only useful for testing)" />
+                                <RadioButton IsChecked="{Binding Source={x:Static p:Settings.Default}, Path=ListenAddressesMode, Converter={StaticResource enumBooleanConverter}, ConverterParameter=CUSTOM}" GroupName="ListenInterfaceMode" Margin="0,6,0,0" Content="Selected Interfaces:" />
+                                <ListBox ItemsSource="{Binding Interfaces}" IsEnabled="{Binding Source={x:Static p:Settings.Default}, Path=ListenAddressesMode, Converter={StaticResource enumBooleanConverter}, ConverterParameter=CUSTOM}" Margin="16,4,0,0" Height="100" BorderBrush="{DynamicResource AccentColorBrush}" BorderThickness="1">
+                                    <ListBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <ListBoxItem IsSelected="{Binding Checked}">
+                                                <CheckBox IsChecked="{Binding Checked}" Content="{Binding Path=Label}" />
+                                            </ListBoxItem>
+                                        </DataTemplate>
+                                    </ListBox.ItemTemplate>
+                                </ListBox>
+                                <RadioButton IsChecked="{Binding Source={x:Static p:Settings.Default}, Path=ListenAddressesMode, Converter={StaticResource enumBooleanConverter}, ConverterParameter=ANY}" GroupName="ListenInterfaceMode" Margin="0,6,0,0" Content="All Interfaces" />
+                                <Label FontWeight="Bold">Port:</Label>
+                                <TextBox>
+                                    <TextBox.Text>
+                                        <Binding Source="{x:Static p:Settings.Default}" Path="ListenPort">
+                                            <Binding.ValidationRules>
+                                                <vr:IntegerValueValidationRule ErrorMessage="Please enter a valid port number..." />
+                                            </Binding.ValidationRules>
+                                        </Binding>
+                                    </TextBox.Text>
+                                </TextBox>
+                            </StackPanel>
+                        </GroupBox>
+                        <GroupBox Header="Authentication" Padding="6">
+                            <StackPanel Orientation="Vertical">
+                                <CheckBox Content="Require Password:" IsChecked="{Binding PasswordRequired}" />
+                                <TextBox Margin="0,2,0,0" Text="{Binding Source={x:Static p:Settings.Default}, Path=RequiredPassword}" IsEnabled="{Binding PasswordRequired}" />
+                                <Label Margin="0,6,0,0">Max Sessions:</Label>
+                                <mac:NumericUpDown Margin="0,6,0,0" Minimum="0" Interval="1" Value="{Binding Path=MaxSessions, Source={x:Static p:Settings.Default}}" TextAlignment="Left" />
+                                <Label Margin="0,6,0,0">Only allow connections from these IPs:</Label>
+                                <ListBox ItemsSource="{Binding IPWhitelist.Entries}" SelectedIndex="{Binding IPWhitelist.SelectedEntryIndex}" Height="100" BorderBrush="{DynamicResource AccentColorBrush}" BorderThickness="1">
+                                    <ListBox.Resources>
+                                        <DataTemplate x:Key="itemTemplate">
+                                            <Grid MinHeight="26">
+                                                <TextBlock Text="{Binding Value}" VerticalAlignment="Center" />
+                                            </Grid>
+                                        </DataTemplate>
+                                        <DataTemplate x:Key="editingTemplate">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="auto" />
+                                                </Grid.ColumnDefinitions>
+                                                <TextBox Grid.Column="0" Text="{Binding Value, ValidatesOnNotifyDataErrors=True}" />
+                                                <Button Grid.Column="1" Command="{Binding DataContext.IPWhitelist.RemoveEntryCommand, RelativeSource={RelativeSource AncestorType=ListBox}}">
+                                                    <fa:FontAwesome Icon="TrashOutline" />
+                                                </Button>
+                                            </Grid>
+                                        </DataTemplate>
+                                    </ListBox.Resources>
+                                    <ListBox.ItemContainerStyle>
+                                        <Style TargetType="ListBoxItem">
+                                            <Setter Property="ContentTemplate" Value="{StaticResource itemTemplate}" />
+                                            <Style.Triggers>
+                                                <Trigger Property="IsSelected" Value="True">
+                                                    <Setter Property="ContentTemplate" Value="{StaticResource editingTemplate}" />
+                                                </Trigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </ListBox.ItemContainerStyle>
+                                </ListBox>
+                                <Grid Margin="0,6,0,0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="auto" />
+                                        <ColumnDefinition Width="auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBox Grid.Column="0" Text="{Binding IPWhitelist.NewEntry.Value, ValidatesOnNotifyDataErrors=True}" />
+                                    <Button Grid.Column="1" Command="{Binding IPWhitelist.AddEntryCommand}">
+                                        <fa:FontAwesome Icon="Plus" />
+                                    </Button>
+                                </Grid>
+                            </StackPanel>
+                        </GroupBox>
+                    </StackPanel>
+                </ScrollViewer>
+            </mac:Flyout>
+            <mac:Flyout Header="Connections" Theme="Light" Width="400" Position="Right" IsOpen="{Binding ConnectionsOpen}">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <fa:ImageAwesome Grid.Row="0" Grid.Column="0">
+                        <fa:ImageAwesome.Style>
+                            <Style TargetType="fa:ImageAwesome">
+                                <Setter Property="Width" Value="24" />
+                                <Setter Property="Height" Value="24" />
+                                <Setter Property="Margin" Value="4" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding WebServer.Status}" Value="Stopped">
+                                        <Setter Property="Icon" Value="ExclamationTriangle" />
+                                        <Setter Property="Spin" Value="False" />
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding WebServer.Status}" Value="Starting">
+                                        <Setter Property="Icon" Value="Refresh" />
+                                        <Setter Property="Spin" Value="True" />
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding WebServer.Status}" Value="Ready">
+                                        <Setter Property="Icon" Value="Signal" />
+                                        <Setter Property="Spin" Value="False" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </fa:ImageAwesome.Style>
+                    </fa:ImageAwesome>
+                    <TextBlock Grid.Row="0" Grid.Column="1" VerticalAlignment="Center">
+                        <Span FontWeight="Bold">Status: </Span>
+                        <Run Text="{Binding WebServer.Status}" />
+                    </TextBlock>
+                    <ItemsControl Grid.Row="1" Grid.ColumnSpan="2" ItemsSource="{Binding Path=WebServer.Clients}" FocusVisualStyle="{x:Null}" Margin="10">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
                                 <StackPanel Orientation="Vertical" />
@@ -230,60 +368,97 @@
                             </Style>
                         </ItemsControl.Style>
                     </ItemsControl>
-                    <ItemsControl Grid.Row="2" Grid.Column="1" ItemsSource="{Binding Path=WebServer.ListenAddresses}" FocusVisualStyle="{x:Null}">
-                        <ItemsControl.ItemsPanel>
-                            <ItemsPanelTemplate>
-                                <StackPanel Orientation="Vertical" />
-                            </ItemsPanelTemplate>
-                        </ItemsControl.ItemsPanel>
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <TextBlock><Hyperlink Command="{Binding DataContext.OpenUriCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}" CommandParameter="{Binding Mode=OneWay}"><Run Text="{Binding Mode=OneWay}" /></Hyperlink></TextBlock>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
                 </Grid>
-            </TabItem>
-            <TabItem vm:IconTabItem.Icon="Th" Header="Layout" HeaderTemplate="{StaticResource tabItemTemplate}">
-                <Grid>
-                    <ItemsControl ItemsSource="{Binding Path=WebServer.Clients}" FocusVisualStyle="{x:Null}" Background="Transparent">
-                        <ItemsControl.ItemsPanel>
-                            <ItemsPanelTemplate>
-                                <Canvas ClipToBounds="True" />
-                            </ItemsPanelTemplate>
-                        </ItemsControl.ItemsPanel>
-                        <ItemsControl.Resources>
-                            <Style x:Key="clientAreaBorder" TargetType="Border">
-                                <Setter Property="Background" Value="Transparent" />
-                                <Setter Property="BorderBrush">
-                                    <Setter.Value>
-                                        <DrawingBrush Viewport="0,0,8,8" ViewportUnits="Absolute" TileMode="Tile">
-                                            <DrawingBrush.Drawing>
-                                                <DrawingGroup>
-                                                    <GeometryDrawing>
-                                                        <GeometryDrawing.Brush>
-                                                            <SolidColorBrush Color="#80000000" />
-                                                        </GeometryDrawing.Brush>
-                                                        <GeometryDrawing.Geometry>
-                                                            <GeometryGroup>
-                                                                <RectangleGeometry Rect="0,0,50,50" />
-                                                                <RectangleGeometry Rect="50,50,50,50" />
-                                                            </GeometryGroup>
-                                                        </GeometryDrawing.Geometry>
-                                                    </GeometryDrawing>
-                                                </DrawingGroup>
-                                            </DrawingBrush.Drawing>
-                                        </DrawingBrush>
-                                    </Setter.Value>
-                                </Setter>
-                                <Setter Property="BorderThickness" Value="1" />
-                            </Style>
-                        </ItemsControl.Resources>
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <Border Style="{StaticResource clientAreaBorder}">
-                                    <Border VerticalAlignment="Bottom" HorizontalAlignment="Right" Background="White" CornerRadius="4" BorderBrush="Black" BorderThickness="1" Padding="4 2" Margin="4">
-                                        <TextBlock Foreground="Black">
+            </mac:Flyout>
+        </mac:FlyoutsControl>
+    </mac:MetroWindow.Flyouts>
+    <DockPanel>
+        <Border DockPanel.Dock="Top" BorderThickness="0,0,0,1" BorderBrush="{DynamicResource AccentColorBrush}">
+            <ToolBar ToolBarTray.IsLocked="True">
+                <Button Command="{Binding ToggleConnectionsFlyoutCommand}" FocusVisualStyle="{x:Null}" ToolTip="Show connections...">
+                    <StackPanel Orientation="Horizontal">
+                        <fa:ImageAwesome VerticalAlignment="Center" Icon="MobilePhone" Width="24" Height="24" Margin="4" />
+                        <TextBlock VerticalAlignment="Center" Text="{Binding WebServer.Clients.Count}" />
+                    </StackPanel>
+                </Button>
+                <Button Command="{Binding TogglePluginsFlyoutCommand}" FocusVisualStyle="{x:Null}" ToolTip="Show plugins...">
+                    <fa:ImageAwesome Icon="Plug" Width="24" Height="24" Margin="4" />
+                </Button>
+                <Button Command="{Binding ToggleSettingsFlyoutCommand}" FocusVisualStyle="{x:Null}" ToolTip="Edit settings...">
+                    <fa:ImageAwesome Icon="Cog" Width="24" Height="24" Margin="4" />
+                </Button>
+                <Button Command="{Binding ShutdownCommand}" FocusVisualStyle="{x:Null}" ToolTip="Shutdown the server and exit...">
+                    <fa:ImageAwesome Icon="WindowCloseOutline" Width="24" Height="24" Margin="4" />
+                </Button>
+            </ToolBar>
+        </Border>
+        <StatusBar DockPanel.Dock="Bottom">
+            <TextBlock Grid.Row="0" Grid.Column="1" VerticalAlignment="Center" Margin="10,0,0,0">
+                <TextBlock.Style>
+                    <Style TargetType="TextBlock">
+                        <Setter Property="Visibility" Value="Collapsed" />
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding WebServer.Status}" Value="Ready">
+                                <Setter Property="Visibility" Value="Visible" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </TextBlock.Style>
+                <Span>To use the remote, navigate to: </Span>
+                <Hyperlink Command="{Binding OpenUriCommand}" CommandParameter="{Binding WebServer.ListenAddresses[0]}">
+                    <Hyperlink.Style>
+                        <Style TargetType="Hyperlink">
+                            <Setter Property="Foreground" Value="White" />
+                            <Style.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Foreground" Value="#FFDEDEDE" />
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Hyperlink.Style>
+                    <Run Text="{Binding WebServer.ListenAddresses[0]}" />
+                </Hyperlink>
+            </TextBlock>
+        </StatusBar>
+        <Grid Grid.Row="1" Grid.ColumnSpan="2" Margin="10">
+            <ItemsControl ItemsSource="{Binding Path=WebServer.Clients}" FocusVisualStyle="{x:Null}" Background="Transparent">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <Canvas ClipToBounds="True" />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.Resources>
+                    <Style x:Key="clientAreaBorder" TargetType="Border">
+                        <Setter Property="Background" Value="Transparent" />
+                        <Setter Property="BorderBrush">
+                            <Setter.Value>
+                                <DrawingBrush Viewport="0,0,8,8" ViewportUnits="Absolute" TileMode="Tile">
+                                    <DrawingBrush.Drawing>
+                                        <DrawingGroup>
+                                            <GeometryDrawing>
+                                                <GeometryDrawing.Brush>
+                                                    <SolidColorBrush Color="#80000000" />
+                                                </GeometryDrawing.Brush>
+                                                <GeometryDrawing.Geometry>
+                                                    <GeometryGroup>
+                                                        <RectangleGeometry Rect="0,0,50,50" />
+                                                        <RectangleGeometry Rect="50,50,50,50" />
+                                                    </GeometryGroup>
+                                                </GeometryDrawing.Geometry>
+                                            </GeometryDrawing>
+                                        </DrawingGroup>
+                                    </DrawingBrush.Drawing>
+                                </DrawingBrush>
+                            </Setter.Value>
+                        </Setter>
+                        <Setter Property="BorderThickness" Value="1" />
+                    </Style>
+                </ItemsControl.Resources>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Border Style="{StaticResource clientAreaBorder}">
+                            <Border VerticalAlignment="Bottom" HorizontalAlignment="Right" Background="White" CornerRadius="4" BorderBrush="Black" BorderThickness="1" Padding="4 2" Margin="4">
+                                <TextBlock Foreground="Black">
                                             <fa:FontAwesome Icon="Mobile" />
                                             <Run>
                                                 <Run.Text>
@@ -293,366 +468,408 @@
                                                     </MultiBinding>
                                                 </Run.Text>
                                             </Run>
-                                        </TextBlock>
-                                    </Border>
-                                </Border>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                        <ItemsControl.ItemContainerStyle>
-                            <Style TargetType="ContentPresenter">
-                                <Setter Property="Canvas.Top" Value="0" />
-                                <Setter Property="Canvas.Left" Value="0" />
-                                <Setter Property="Canvas.Width" Value="{Binding ClientWidth}" />
-                                <Setter Property="Canvas.Height" Value="{Binding ClientHeight}" />
+                                </TextBlock>
+                            </Border>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+                <ItemsControl.ItemContainerStyle>
+                    <Style TargetType="ContentPresenter">
+                        <Setter Property="Canvas.Top" Value="0" />
+                        <Setter Property="Canvas.Left" Value="0" />
+                        <Setter Property="Canvas.Width" Value="{Binding ClientWidth}" />
+                        <Setter Property="Canvas.Height" Value="{Binding ClientHeight}" />
+                    </Style>
+                </ItemsControl.ItemContainerStyle>
+            </ItemsControl>
+            <ItemsControl ItemsSource="{Binding RemoteControlService.Buttons}" FocusVisualStyle="{x:Null}" Background="Transparent" PreviewMouseRightButtonDown="ItemsControl_PreviewMouseRightButtonDown" MouseLeftButtonDown="ItemsControl_MouseLeftButtonDown">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <Canvas ClipToBounds="False" />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ContextMenu>
+                    <ContextMenu>
+                        <ContextMenu.Resources>
+                            <Style TargetType="fa:ImageAwesome">
+                                <Setter Property="Width" Value="20" />
+                                <Setter Property="Height" Value="20" />
                             </Style>
-                        </ItemsControl.ItemContainerStyle>
-                    </ItemsControl>
-                    <ItemsControl ItemsSource="{Binding RemoteControlService.Buttons}" FocusVisualStyle="{x:Null}" Background="Transparent" PreviewMouseRightButtonDown="ItemsControl_PreviewMouseRightButtonDown">
-                        <ItemsControl.ItemsPanel>
-                            <ItemsPanelTemplate>
-                                <Canvas ClipToBounds="True" />
-                            </ItemsPanelTemplate>
-                        </ItemsControl.ItemsPanel>
-                        <ItemsControl.ContextMenu>
-                            <ContextMenu>
-                                <ContextMenu.Resources>
-                                    <Style TargetType="fa:ImageAwesome">
-                                        <Setter Property="Width" Value="20" />
-                                        <Setter Property="Height" Value="20" />
-                                    </Style>
-                                </ContextMenu.Resources>
-                                <MenuItem Command="{Binding AddButtonCommand}" Header="Add button...">
-                                    <MenuItem.Icon>
-                                        <fa:ImageAwesome Icon="PlusSquareOutline" />
-                                    </MenuItem.Icon>
-                                </MenuItem>
-                                <MenuItem Command="{Binding AddToggleButtonCommand}" Header="Add toggle button...">
-                                    <MenuItem.Icon>
-                                        <fa:ImageAwesome Icon="ToggleOn" />
-                                    </MenuItem.Icon>
-                                </MenuItem>
-                                <MenuItem Command="{Binding AddBoundToggleButtonCommand}" Header="Add bound toggle button...">
-                                    <MenuItem.Icon>
-                                        <fa:ImageAwesome Icon="ToggleOn" />
-                                    </MenuItem.Icon>
-                                </MenuItem>
-                                <MenuItem Command="{Binding AddSliderCommand}" Header="Add slider...">
-                                    <MenuItem.Icon>
-                                        <fa:ImageAwesome Icon="ArrowsH" />
-                                    </MenuItem.Icon>
-                                </MenuItem>
-                            </ContextMenu>
-                        </ItemsControl.ContextMenu>
-                        <ItemsControl.Resources>
-                            <ContextMenu x:Key="itemContextMenu">
-                                <ContextMenu.Resources>
-                                    <Style TargetType="fa:ImageAwesome">
-                                        <Setter Property="Width" Value="20" />
-                                        <Setter Property="Height" Value="20" />
-                                    </Style>
-                                </ContextMenu.Resources>
-                                <MenuItem Command="{Binding PlacementTarget.Tag.OpenPropertiesCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" CommandParameter="{Binding}" Header="Properties">
-                                    <MenuItem.Icon>
-                                        <fa:ImageAwesome Icon="Wrench" />
-                                    </MenuItem.Icon>
-                                </MenuItem>
-                                <Separator />
-                                <MenuItem Command="{Binding PlacementTarget.Tag.RemoveButtonCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" CommandParameter="{Binding}" Header="Delete">
-                                    <MenuItem.Icon>
-                                        <fa:ImageAwesome Icon="TrashOutline" />
-                                    </MenuItem.Icon>
-                                </MenuItem>
-                            </ContextMenu>
-                            <Style x:Key="controlBorder" TargetType="Border">
-                                <Setter Property="MinHeight" Value="108" />
-                                <Setter Property="MinWidth" Value="108" />
-                                <Setter Property="BorderThickness" Value="1" />
+                        </ContextMenu.Resources>
+                        <MenuItem Command="{Binding AddButtonCommand}" Header="Add button...">
+                            <MenuItem.Icon>
+                                <fa:ImageAwesome Icon="PlusSquareOutline" />
+                            </MenuItem.Icon>
+                        </MenuItem>
+                        <MenuItem Command="{Binding AddToggleButtonCommand}" Header="Add toggle button...">
+                            <MenuItem.Icon>
+                                <fa:ImageAwesome Icon="PlusSquareOutline" />
+                            </MenuItem.Icon>
+                        </MenuItem>
+                        <MenuItem Command="{Binding AddBoundToggleButtonCommand}" Header="Add bound toggle button...">
+                            <MenuItem.Icon>
+                                <fa:ImageAwesome Icon="PlusSquareOutline" />
+                            </MenuItem.Icon>
+                        </MenuItem>
+                        <Separator />
+                        <MenuItem Command="{Binding AddSliderCommand}" Header="Add slider...">
+                            <MenuItem.Icon>
+                                <fa:ImageAwesome Icon="ArrowsH" />
+                            </MenuItem.Icon>
+                        </MenuItem>
+                        <Separator />
+                        <MenuItem Command="{Binding AddBooleanLabelCommand}" Header="Add True/False label...">
+                            <MenuItem.Icon>
+                                <fa:ImageAwesome Icon="QuoteRight" />
+                            </MenuItem.Icon>
+                        </MenuItem>
+                        <MenuItem Command="{Binding AddFloatLabelCommand}" Header="Add Number label...">
+                            <MenuItem.Icon>
+                                <fa:ImageAwesome Icon="QuoteRight" />
+                            </MenuItem.Icon>
+                        </MenuItem>
+                        <MenuItem Command="{Binding AddStringLabelCommand}" Header="Add String label...">
+                            <MenuItem.Icon>
+                                <fa:ImageAwesome Icon="QuoteRight" />
+                            </MenuItem.Icon>
+                        </MenuItem>
+                        <MenuItem Command="{Binding AddStaticLabelCommand}" Header="Add label...">
+                            <MenuItem.Icon>
+                                <fa:ImageAwesome Icon="QuoteRight" />
+                            </MenuItem.Icon>
+                        </MenuItem>
+                    </ContextMenu>
+                </ItemsControl.ContextMenu>
+                <ItemsControl.Resources>
+                    <ContextMenu x:Key="itemContextMenu">
+                        <ContextMenu.Resources>
+                            <Style TargetType="fa:ImageAwesome">
+                                <Setter Property="Width" Value="20" />
+                                <Setter Property="Height" Value="20" />
+                            </Style>
+                        </ContextMenu.Resources>
+                        <MenuItem Command="{Binding PlacementTarget.Tag.OpenPropertiesCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" CommandParameter="{Binding}" Header="Properties">
+                            <MenuItem.Icon>
+                                <fa:ImageAwesome Icon="Wrench" />
+                            </MenuItem.Icon>
+                        </MenuItem>
+                        <Separator />
+                        <MenuItem Command="{Binding PlacementTarget.Tag.RemoveButtonCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" CommandParameter="{Binding}" Header="Delete">
+                            <MenuItem.Icon>
+                                <fa:ImageAwesome Icon="TrashOutline" />
+                            </MenuItem.Icon>
+                        </MenuItem>
+                    </ContextMenu>
+                    <Style x:Key="controlBorder" TargetType="Border">
+                        <Setter Property="Padding" Value="5" />
+                        <Setter Property="BorderThickness" Value="1" />
+                        <Setter Property="BorderBrush">
+                            <Setter.Value>
+                                <DrawingBrush Viewport="0,0,8,8" ViewportUnits="Absolute" TileMode="Tile">
+                                    <DrawingBrush.Drawing>
+                                        <DrawingGroup>
+                                            <GeometryDrawing Brush="Black">
+                                                <GeometryDrawing.Geometry>
+                                                    <GeometryGroup>
+                                                        <RectangleGeometry Rect="0,0,50,50" />
+                                                        <RectangleGeometry Rect="50,50,50,50" />
+                                                    </GeometryGroup>
+                                                </GeometryDrawing.Geometry>
+                                            </GeometryDrawing>
+                                        </DrawingGroup>
+                                    </DrawingBrush.Drawing>
+                                </DrawingBrush>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+                    <Style x:Key="buttonBorder" TargetType="Border">
+                        <Setter Property="Padding" Value="5" />
+                        <Setter Property="CornerRadius" Value="4" />
+                        <Setter Property="BorderThickness" Value="1" />
+                        <Setter Property="BorderBrush">
+                            <Setter.Value>
+                                <SolidColorBrush Color="#FFCCCCCC" />
+                            </Setter.Value>
+                        </Setter>
+                        <Style.Triggers>
+                            <Trigger Property="Border.IsMouseOver" Value="True">
                                 <Setter Property="BorderBrush">
                                     <Setter.Value>
-                                        <SolidColorBrush Color="#FFCCCCCC" />
+                                        <SolidColorBrush Color="#FFADADAD" />
                                     </Setter.Value>
                                 </Setter>
-                                <Setter Property="Background" Value="White" />
-                                <Setter Property="CornerRadius" Value="4" />
-                            </Style>
-                            <Style x:Key="sliderBorder" TargetType="Border" BasedOn="{StaticResource controlBorder}">
-                                <Setter Property="Padding" Value="6 12" />
-                            </Style>
-                            <Style x:Key="buttonBorder" TargetType="Border" BasedOn="{StaticResource controlBorder}">
-                                <Setter Property="MaxWidth" Value="108" />
-                                <Setter Property="Padding" Value="16" />
-                                <Style.Triggers>
-                                    <Trigger Property="Border.IsMouseOver" Value="True">
-                                        <Setter Property="BorderBrush">
-                                            <Setter.Value>
-                                                <SolidColorBrush Color="#FFADADAD" />
-                                            </Setter.Value>
-                                        </Setter>
-                                        <Setter Property="Background">
-                                            <Setter.Value>
-                                                <SolidColorBrush Color="#FFE6E6E6" />
-                                            </Setter.Value>
-                                        </Setter>
-                                    </Trigger>
-                                </Style.Triggers>
-                            </Style>
-                            <DataTemplate DataType="{x:Type controls:RemoteButton}">
-                                <Border Tag="{Binding DataContext, RelativeSource={RelativeSource AncestorType=ItemsControl}}" ContextMenu="{StaticResource itemContextMenu}" Style="{StaticResource buttonBorder}">
-                                    <StackPanel Orientation="Vertical" VerticalAlignment="Top">
-                                        <Image Width="48" Height="48" Source="{Binding Icon.Source.Image}" />
-                                        <TextBlock Margin="0,10,0,0" HorizontalAlignment="Stretch" TextAlignment="Center" TextWrapping="WrapWithOverflow" Text="{Binding Label}" Visibility="{Binding Label, Converter={StaticResource stringEmptyVisiblityConverter}}" />
-                                    </StackPanel>
-                                </Border>
-                            </DataTemplate>
-                            <DataTemplate DataType="{x:Type controls:RemoteToggleButtonBase}">
-                                <Border Tag="{Binding DataContext, RelativeSource={RelativeSource AncestorType=ItemsControl}}" ContextMenu="{StaticResource itemContextMenu}" Style="{StaticResource buttonBorder}">
-                                    <StackPanel Orientation="Vertical" VerticalAlignment="Top">
-                                        <Grid>
-                                            <Image Width="48" Height="48" Source="{Binding Icon.Source.Image}" />
-                                            <TextBlock HorizontalAlignment="Right" VerticalAlignment="Bottom" FontSize="10px">
-                                            <fa:FontAwesome>
-                                                <fa:FontAwesome.Style>
-                                                    <Style TargetType="fa:FontAwesome">
-                                                        <Setter Property="Icon" Value="ToggleOff" />
-                                                        <Style.Triggers>
-                                                            <DataTrigger Binding="{Binding Toggled}" Value="True">
-                                                                <Setter Property="Icon" Value="ToggleOn" />
-                                                            </DataTrigger>
-                                                        </Style.Triggers>
-                                                    </Style>
-                                                </fa:FontAwesome.Style>
-                                            </fa:FontAwesome>
-                                            </TextBlock>
-                                        </Grid>
-                                        <TextBlock Margin="0,10,0,0" HorizontalAlignment="Stretch" TextAlignment="Center" TextWrapping="WrapWithOverflow" Text="{Binding Label}"  Visibility="{Binding Label, Converter={StaticResource stringEmptyVisiblityConverter}}" />
-                                    </StackPanel>
-                                </Border>
-                            </DataTemplate>
-                            <DataTemplate DataType="{x:Type controls:RemoteSlider}">
-                                <Border Tag="{Binding DataContext, RelativeSource={RelativeSource AncestorType=ItemsControl}}" ContextMenu="{StaticResource itemContextMenu}" Style="{StaticResource sliderBorder}">
-                                    <Grid>
-                                        <Grid.RowDefinitions>
-                                            <RowDefinition Height="*" />
-                                            <RowDefinition Height="auto" />
-                                        </Grid.RowDefinitions>
-                                        <Slider Grid.Row="0" Minimum="0.0" Maximum="1.0" Orientation="{Binding Orientation}" Value="{Binding NormalizedValue}">
-                                            <Slider.Style>
-                                                <Style TargetType="Slider" BasedOn="{StaticResource MetroSlider}">
-                                                    <Setter Property="Width" Value="200" />
-                                                    <Setter Property="Height" Value="auto" />
-                                                    <Setter Property="HorizontalAlignment" Value="Center" />
-                                                    <Setter Property="VerticalAlignment" Value="Center" />
-                                                    <Style.Triggers>
-                                                        <DataTrigger Binding="{Binding Orientation}" Value="Vertical">
-                                                            <Setter Property="Width" Value="auto" />
-                                                            <Setter Property="Height" Value="200" />
-                                                        </DataTrigger>
-                                                    </Style.Triggers>
-                                                </Style>
-                                            </Slider.Style>
-                                        </Slider>
-                                        <Label Margin="0,10,0,0" Grid.Row="1" Content="{Binding Label}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" />
-                                    </Grid>
-                                </Border>
-                            </DataTemplate>
-                        </ItemsControl.Resources>
-                        <ItemsControl.ItemContainerStyle>
-                            <Style TargetType="ContentPresenter">
-                                <Setter Property="Canvas.Left" Value="{Binding Path=X, Mode=TwoWay}" />
-                                <Setter Property="Canvas.Top" Value="{Binding Path=Y, Mode=TwoWay}" />
-                                <Setter Property="Panel.ZIndex" Value="{Binding Path=ZIndex, Mode=TwoWay}" />
-                                <Setter Property="AllowDrop" Value="True" />
-                                <EventSetter Event="PreviewMouseLeftButtonDown" Handler="item_PreviewMouseLeftButtonDown" />
-                                <EventSetter Event="PreviewMouseMove" Handler="item_PreviewMouseMove" />
-                                <EventSetter Event="PreviewMouseLeftButtonUp" Handler="item_PreviewMouseLeftButtonUp" />
-                            </Style>
-                        </ItemsControl.ItemContainerStyle>
-                    </ItemsControl>
-                </Grid>
-            </TabItem>
-            <TabItem vm:IconTabItem.Icon="Plug" Header="Plugins" HeaderTemplate="{StaticResource tabItemTemplate}">
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="auto" />
-                        <RowDefinition Height="*" />
-                    </Grid.RowDefinitions>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition>
-                            <ColumnDefinition.Style>
-                                <Style TargetType="ColumnDefinition">
-                                    <Setter Property="Width" Value="*" />
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                    <DataTemplate DataType="{x:Type controls:RemoteButton}">
+                        <Border x:Name="buttonContainer">
+                            <Border.Style>
+                                <Style TargetType="Border" BasedOn="{StaticResource buttonBorder}">
+                                    <Setter Property="Background">
+                                        <Setter.Value>
+                                            <SolidColorBrush Color="{Binding BackgroundColor}" />
+                                        </Setter.Value>
+                                    </Setter>
                                     <Style.Triggers>
-                                        <DataTrigger Binding="{Binding SelectedPlugin}" Value="{x:Null}">
-                                            <Setter Property="Width" Value="0" />
-                                        </DataTrigger>
+                                        <Trigger Property="Border.IsMouseOver" Value="True">
+                                            <Setter Property="Border.Background">
+                                                <Setter.Value>
+                                                    <SolidColorBrush Color="{Binding ActiveBackgroundColor}" />
+                                                </Setter.Value>
+                                            </Setter>
+                                        </Trigger>
                                     </Style.Triggers>
                                 </Style>
-                            </ColumnDefinition.Style>
-                        </ColumnDefinition>
-                    </Grid.ColumnDefinitions>
-                    <TextBlock Grid.Row="0" Grid.ColumnSpan="2" Padding="5">
-                        <Span FontWeight="Bold">Plugins Directory:</Span>
-                        <Hyperlink Command="{Binding OpenPluginsDirectoryCommand}"><Run Text="{Binding PluginManager.PluginsDirectory, Mode=OneTime}" /></Hyperlink>
-                    </TextBlock>
-                    <ListBox Grid.Column="0" Grid.Row="1"  SelectedItem="{Binding SelectedPlugin}" ItemsSource="{Binding PluginManager.Plugins}">
-                        <ListBox.ItemTemplate>
-                            <DataTemplate>
-                                <StackPanel Orientation="Horizontal">
-                                    <TextBlock VerticalAlignment="Center" FontSize="20px">
+                            </Border.Style>
+                            <StackPanel Orientation="Vertical" VerticalAlignment="Center">
+                                <Image Margin="0,5,0,5" Width="48" Height="48" Source="{Binding Icon.Source.Image}" Visibility="{Binding Icon.Source,Converter={StaticResource isNullToVisibilityConverter}}" />
+                                <TextBlock Margin="0,5,0,5" HorizontalAlignment="Stretch" Text="{Binding Label}" Visibility="{Binding Label, Converter={StaticResource stringEmptyVisiblityConverter}}">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="FontFamily" Value="{Binding Font.Family}" />
+                                            <Setter Property="FontSize" Value="{Binding Font.Size}" />
+                                            <Setter Property="FontWeight" Value="{Binding Font.Weight}" />
+                                            <Setter Property="FontStyle" Value="{Binding Font.Style}" />
+                                            <Setter Property="TextAlignment" Value="{Binding TextAlignment}" />
+                                            <Setter Property="TextWrapping" Value="NoWrap" />
+                                            <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+                                            <Setter Property="Foreground">
+                                                <Setter.Value>
+                                                    <SolidColorBrush Color="{Binding Color}" />
+                                                </Setter.Value>
+                                            </Setter>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding ElementName=buttonContainer, Path=(Border.IsMouseOver)}" Value="True">
+                                                    <Setter Property="Foreground">
+                                                        <Setter.Value>
+                                                            <SolidColorBrush Color="{Binding ActiveColor}" />
+                                                        </Setter.Value>
+                                                    </Setter>
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding WrapContents}" Value="True">
+                                                    <Setter Property="TextWrapping" Value="Wrap" />
+                                                    <Setter Property="TextTrimming" Value="None" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+                            </StackPanel>
+                        </Border>
+                    </DataTemplate>
+                    <DataTemplate DataType="{x:Type controls:RemoteToggleButtonBase}">
+                        <Border x:Name="buttonContainer">
+                            <Border.Style>
+                                <Style TargetType="Border" BasedOn="{StaticResource buttonBorder}">
+                                    <Setter Property="Background">
+                                        <Setter.Value>
+                                            <SolidColorBrush Color="{Binding BackgroundColor}" />
+                                        </Setter.Value>
+                                    </Setter>
+                                    <Style.Triggers>
+                                        <Trigger Property="Border.IsMouseOver" Value="True">
+                                            <Setter Property="Border.Background">
+                                                <Setter.Value>
+                                                    <SolidColorBrush Color="{Binding ActiveBackgroundColor}" />
+                                                </Setter.Value>
+                                            </Setter>
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Border.Style>
+                            <StackPanel Orientation="Vertical" VerticalAlignment="Center">
+                                <Grid Margin="0,5,0,5" Visibility="{Binding Icon.Source, Converter={StaticResource isNullToVisibilityConverter}}">
+                                    <Image Width="48" Height="48" Source="{Binding Icon.Source.Image}" />
+                                    <TextBlock HorizontalAlignment="Right" VerticalAlignment="Bottom" FontSize="10px">
                                         <fa:FontAwesome>
                                             <fa:FontAwesome.Style>
                                                 <Style TargetType="fa:FontAwesome">
-                                                    <Setter Property="Width" Value="24" />
-                                                    <Setter Property="Icon">
+                                                    <Setter Property="Icon" Value="ToggleOff" />
+                                                    <Setter Property="Foreground">
                                                         <Setter.Value>
-                                                            <Binding Converter="{StaticResource faClassNameConverter}" Path="Icon" />
+                                                            <SolidColorBrush Color="{Binding Color}" />
                                                         </Setter.Value>
                                                     </Setter>
                                                     <Style.Triggers>
-                                                        <DataTrigger Binding="{Binding Icon}" Value="{x:Null}">
-                                                            <Setter Property="Icon" Value="Cubes" />
+                                                        <DataTrigger Binding="{Binding ElementName=buttonContainer, Path=(Border.IsMouseOver)}" Value="True">
+                                                            <Setter Property="Foreground">
+                                                                <Setter.Value>
+                                                                    <SolidColorBrush Color="{Binding ActiveColor}" />
+                                                                </Setter.Value>
+                                                            </Setter>
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding Toggled}" Value="True">
+                                                            <Setter Property="Icon" Value="ToggleOn" />
                                                         </DataTrigger>
                                                     </Style.Triggers>
                                                 </Style>
                                             </fa:FontAwesome.Style>
                                         </fa:FontAwesome>
                                     </TextBlock>
-                                    <TextBlock VerticalAlignment="Center" Margin="4,0,0,0" Text="{Binding Name}" />
-                                </StackPanel>
-                            </DataTemplate>
-                        </ListBox.ItemTemplate>
-                    </ListBox>
-                    <Grid Grid.Column="1" Grid.Row="1">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="1*" />
-                            <ColumnDefinition Width="2*" />
-                        </Grid.ColumnDefinitions>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="auto" />
-                            <RowDefinition Height="auto" />
-                            <RowDefinition Height="auto" />
-                            <RowDefinition Height="auto" />
-                            <RowDefinition Height="*" />
-                        </Grid.RowDefinitions>
-
-                        <fa:ImageAwesome Width="64" Height="64" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2">
-                            <fa:ImageAwesome.Style>
-                                <Style TargetType="fa:ImageAwesome">
-                                    <Setter Property="Icon">
-                                        <Setter.Value>
-                                            <Binding Converter="{StaticResource faClassNameConverter}" Path="SelectedPlugin.Icon" />
-                                        </Setter.Value>
-                                    </Setter>
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding SelectedPlugin.Icon}" Value="{x:Null}">
-                                            <Setter Property="Icon" Value="Cubes" />
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </fa:ImageAwesome.Style>
-                        </fa:ImageAwesome>
-
-                        <Label Grid.Row="1" Grid.Column="0" FontWeight="Bold" VerticalContentAlignment="Top" HorizontalAlignment="Right">Plugin Name</Label>
-                        <Label Grid.Row="2" Grid.Column="0" FontWeight="Bold" VerticalAlignment="Top" HorizontalAlignment="Right">Description</Label>
-                        <Label Grid.Row="3" Grid.Column="0" FontWeight="Bold" VerticalAlignment="Top" HorizontalAlignment="Right">Version</Label>
-
-                        <TextBlock Grid.Row="1" Grid.Column="1" VerticalAlignment="Top" Padding="5" Text="{Binding SelectedPlugin.Name}" />
-                        <TextBlock Grid.Row="2" Grid.Column="1" VerticalAlignment="Top" Padding="5" Text="{Binding SelectedPlugin.Description}" TextWrapping="WrapWithOverflow" />
-                        <TextBlock Grid.Row="3" Grid.Column="1" VerticalAlignment="Top" Padding="5" Text="{Binding SelectedPlugin.Version}" />
-                    </Grid>
-                </Grid>
-            </TabItem>
-            <TabItem vm:IconTabItem.Icon="Cog" Header="Settings" HeaderTemplate="{StaticResource tabItemTemplate}">
-                <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" FocusVisualStyle="{x:Null}">
-                    <StackPanel Orientation="Vertical">
-                        <GroupBox Header="Server" Padding="6">
-                            <StackPanel Orientation="Vertical">
-                                <Label Foreground="Red">
-                                    <TextBlock>
-                                        <Span FontWeight="Bold">Note:</Span>
-                                        <Span>Changing the listen interfaces and port will require a restart of Touch Remote.</Span>
-                                    </TextBlock>
-                                </Label>
-                                <Label FontWeight="Bold">Interface:</Label>
-                                <RadioButton IsChecked="{Binding Source={x:Static p:Settings.Default}, Path=ListenAddressesMode, Converter={StaticResource enumBooleanConverter}, ConverterParameter=LOCAL_ONLY}" GroupName="ListenInterfaceMode" Margin="0,6,0,0" Content="Localhost (most secure, only useful for testing)" />
-                                <RadioButton IsChecked="{Binding Source={x:Static p:Settings.Default}, Path=ListenAddressesMode, Converter={StaticResource enumBooleanConverter}, ConverterParameter=CUSTOM}" GroupName="ListenInterfaceMode" Margin="0,6,0,0" Content="Selected Interfaces:" />
-                                <ListBox ItemsSource="{Binding Interfaces}" IsEnabled="{Binding Source={x:Static p:Settings.Default}, Path=ListenAddressesMode, Converter={StaticResource enumBooleanConverter}, ConverterParameter=CUSTOM}" Margin="16,4,0,0" Height="100" BorderBrush="{DynamicResource AccentColorBrush}" BorderThickness="1">
-                                    <ListBox.ItemTemplate>
-                                        <DataTemplate>
-                                            <ListBoxItem IsSelected="{Binding Checked}">
-                                                <CheckBox IsChecked="{Binding Checked}" Content="{Binding Path=Label}" />
-                                            </ListBoxItem>
-                                        </DataTemplate>
-                                    </ListBox.ItemTemplate>
-                                </ListBox>
-                                <RadioButton IsChecked="{Binding Source={x:Static p:Settings.Default}, Path=ListenAddressesMode, Converter={StaticResource enumBooleanConverter}, ConverterParameter=ANY}" GroupName="ListenInterfaceMode" Margin="0,6,0,0" Content="All Interfaces" />
-                                <Label FontWeight="Bold">Port:</Label>
-                                <TextBox>
-                                    <TextBox.Text>
-                                        <Binding Source="{x:Static p:Settings.Default}" Path="ListenPort">
-                                            <Binding.ValidationRules>
-                                                <vr:IntegerValueValidationRule ErrorMessage="Please enter a valid port number..." />
-                                            </Binding.ValidationRules>
-                                        </Binding>
-                                    </TextBox.Text>
-                                </TextBox>
-                            </StackPanel>
-                        </GroupBox>
-                        <GroupBox Header="Authentication" Padding="6">
-                            <StackPanel Orientation="Vertical">
-                                <CheckBox Content="Require Password:" IsChecked="{Binding PasswordRequired}" />
-                                <TextBox Margin="0,2,0,0" Text="{Binding Source={x:Static p:Settings.Default}, Path=RequiredPassword}" IsEnabled="{Binding PasswordRequired}" />
-                                <Label Margin="0,6,0,0">Max Sessions:</Label>
-                                <mac:NumericUpDown Margin="0,6,0,0" Minimum="0" Interval="1" Value="{Binding Path=MaxSessions, Source={x:Static p:Settings.Default}}" TextAlignment="Left" />
-                                <Label Margin="0,6,0,0">Only allow connections from these IPs:</Label>
-                                <ListBox ItemsSource="{Binding IPWhitelist.Entries}" SelectedIndex="{Binding IPWhitelist.SelectedEntryIndex}" Height="100" BorderBrush="{DynamicResource AccentColorBrush}" BorderThickness="1">
-                                    <ListBox.Resources>
-                                        <DataTemplate x:Key="itemTemplate">
-                                            <Grid MinHeight="26">
-                                                <TextBlock Text="{Binding Value}" VerticalAlignment="Center" />
-                                            </Grid>
-                                        </DataTemplate>
-                                        <DataTemplate x:Key="editingTemplate">
-                                            <Grid>
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="*" />
-                                                    <ColumnDefinition Width="auto" />
-                                                </Grid.ColumnDefinitions>
-                                                <TextBox Grid.Column="0" Text="{Binding Value, ValidatesOnNotifyDataErrors=True}" />
-                                                <Button Grid.Column="1" Command="{Binding DataContext.IPWhitelist.RemoveEntryCommand, RelativeSource={RelativeSource AncestorType=ListBox}}">
-                                                    <fa:FontAwesome Icon="TrashOutline" />
-                                                </Button>
-                                            </Grid>
-                                        </DataTemplate>
-                                    </ListBox.Resources>
-                                    <ListBox.ItemContainerStyle>
-                                        <Style TargetType="ListBoxItem">
-                                            <Setter Property="ContentTemplate" Value="{StaticResource itemTemplate}" />
+                                </Grid>
+                                <TextBlock Margin="0,5,0,5" HorizontalAlignment="Stretch" Text="{Binding Label}" Visibility="{Binding Label, Converter={StaticResource stringEmptyVisiblityConverter}}">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="FontFamily" Value="{Binding Font.Family}" />
+                                            <Setter Property="FontSize" Value="{Binding Font.Size}" />
+                                            <Setter Property="FontWeight" Value="{Binding Font.Weight}" />
+                                            <Setter Property="FontStyle" Value="{Binding Font.Style}" />
+                                            <Setter Property="TextAlignment" Value="{Binding TextAlignment}" />
+                                            <Setter Property="TextWrapping" Value="NoWrap" />
+                                            <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+                                            <Setter Property="Foreground">
+                                                <Setter.Value>
+                                                    <SolidColorBrush Color="{Binding Color}" />
+                                                </Setter.Value>
+                                            </Setter>
                                             <Style.Triggers>
-                                                <Trigger Property="IsSelected" Value="True">
-                                                    <Setter Property="ContentTemplate" Value="{StaticResource editingTemplate}" />
-                                                </Trigger>
+                                                <DataTrigger Binding="{Binding ElementName=buttonContainer, Path=(Border.IsMouseOver)}" Value="True">
+                                                    <Setter Property="Foreground">
+                                                        <Setter.Value>
+                                                            <SolidColorBrush Color="{Binding ActiveColor}" />
+                                                        </Setter.Value>
+                                                    </Setter>
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding WrapContents}" Value="True">
+                                                    <Setter Property="TextWrapping" Value="Wrap" />
+                                                    <Setter Property="TextTrimming" Value="None" />
+                                                </DataTrigger>
                                             </Style.Triggers>
                                         </Style>
-                                    </ListBox.ItemContainerStyle>
-                                </ListBox>
-                                <Grid Margin="0,6,0,0">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="auto" />
-                                        <ColumnDefinition Width="auto" />
-                                    </Grid.ColumnDefinitions>
-                                    <TextBox Grid.Column="0" Text="{Binding IPWhitelist.NewEntry.Value, ValidatesOnNotifyDataErrors=True}" />
-                                    <Button Grid.Column="1" Command="{Binding IPWhitelist.AddEntryCommand}">
-                                        <fa:FontAwesome Icon="Plus" />
-                                    </Button>
-                                </Grid>
+                                    </TextBlock.Style>
+                                </TextBlock>
                             </StackPanel>
-                        </GroupBox>
-                    </StackPanel>
-                </ScrollViewer>
-            </TabItem>
-        </TabControl>
-    </Grid>
+                        </Border>
+                    </DataTemplate>
+                    <DataTemplate DataType="{x:Type controls:RemoteSlider}">
+                        <Border Style="{StaticResource controlBorder}">
+                            <Border.Background>
+                                <SolidColorBrush Color="{Binding BackgroundColor}" />
+                            </Border.Background>
+                            <Slider Minimum="0.0" Maximum="1.0" Value="{Binding NormalizedValue}">
+                                <Slider.Style>
+                                    <Style TargetType="Slider" BasedOn="{StaticResource MetroSlider}">
+                                        <Setter Property="Orientation" Value="{Binding Orientation}" />
+                                        <Setter Property="HorizontalAlignment" Value="Stretch" />
+                                        <Setter Property="VerticalAlignment" Value="Center" />
+                                        <Setter Property="MinWidth" Value="0" />
+                                        <Setter Property="MinHeight" Value="0" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Orientation}" Value="Vertical">
+                                                <Setter Property="HorizontalAlignment" Value="Center" />
+                                                <Setter Property="VerticalAlignment" Value="Stretch" />
+                                            </DataTrigger>
+                                            <MultiDataTrigger>
+                                                <MultiDataTrigger.Conditions>
+                                                    <Condition Binding="{Binding Orientation}" Value="Vertical" />
+                                                    <Condition Binding="{Binding AutoSize}" Value="True" />
+                                                </MultiDataTrigger.Conditions>
+                                                <Setter Property="MinWidth" Value="0" />
+                                                <Setter Property="MinHeight" Value="200" />
+                                            </MultiDataTrigger>
+                                            <MultiDataTrigger>
+                                                <MultiDataTrigger.Conditions>
+                                                    <Condition Binding="{Binding Orientation}" Value="Horizontal" />
+                                                    <Condition Binding="{Binding AutoSize}" Value="True" />
+                                                </MultiDataTrigger.Conditions>
+                                                <Setter Property="MinWidth" Value="200" />
+                                                <Setter Property="MinHeight" Value="0" />
+                                            </MultiDataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Slider.Style>
+                            </Slider>
+                        </Border>
+                    </DataTemplate>
+                    <DataTemplate DataType="{x:Type controls:RemoteLabelBase}">
+                        <Border Style="{StaticResource controlBorder}">
+                            <Border.Background>
+                                <SolidColorBrush Color="{Binding BackgroundColor}" />
+                            </Border.Background>
+                            <TextBlock Text="{Binding Text}">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="FontFamily" Value="{Binding Font.Family}" />
+                                        <Setter Property="FontSize" Value="{Binding Font.Size}" />
+                                        <Setter Property="FontWeight" Value="{Binding Font.Weight}" />
+                                        <Setter Property="FontStyle" Value="{Binding Font.Style}" />
+                                        <Setter Property="TextAlignment" Value="{Binding TextAlignment}" />
+                                        <Setter Property="TextWrapping" Value="NoWrap" />
+                                        <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+                                        <Setter Property="Foreground">
+                                            <Setter.Value>
+                                                <SolidColorBrush Color="{Binding Color}" />
+                                            </Setter.Value>
+                                        </Setter>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding WrapContents}" Value="True">
+                                                <Setter Property="TextWrapping" Value="Wrap" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </Border>
+                    </DataTemplate>
+                    <ControlTemplate x:Key="ResizeDecoratorTemplate" TargetType="Control">
+                        <Grid>
+                            <ui:ResizeThumb Width="7" Height="7" Cursor="SizeNS" Margin="0 -3 0 0" VerticalAlignment="Top" HorizontalAlignment="Center" />
+                            <ui:ResizeThumb Width="7" Height="7" Cursor="SizeWE" Margin="-3 0 0 0" VerticalAlignment="Center" HorizontalAlignment="Left" />
+                            <ui:ResizeThumb Width="7" Height="7" Cursor="SizeWE" Margin="0 0 -3 0" VerticalAlignment="Center" HorizontalAlignment="Right" />
+                            <ui:ResizeThumb Width="7" Height="7" Cursor="SizeNS" Margin="0 0 0 -3" VerticalAlignment="Bottom"  HorizontalAlignment="Center" />
+                            <ui:ResizeThumb Width="7" Height="7" Cursor="SizeNWSE" Margin="-3 -3 0 0" VerticalAlignment="Top" HorizontalAlignment="Left" />
+                            <ui:ResizeThumb Width="7" Height="7" Cursor="SizeNESW" Margin="0 -3 -3 0" VerticalAlignment="Top" HorizontalAlignment="Right" />
+                            <ui:ResizeThumb Width="7" Height="7" Cursor="SizeNESW" Margin="-3 0 0 -3" VerticalAlignment="Bottom" HorizontalAlignment="Left" />
+                            <ui:ResizeThumb Width="7" Height="7" Cursor="SizeNWSE" Margin="0 0 -3 -3" VerticalAlignment="Bottom" HorizontalAlignment="Right" />
+                        </Grid>
+                    </ControlTemplate>
+                    <uc:ReferenceEqualsConverter x:Key="referenceEqualsConverter" />
+                </ItemsControl.Resources>
+                <ItemsControl.ItemContainerStyle>
+                    <Style TargetType="ContentPresenter">
+                        <Setter Property="Canvas.Left" Value="{Binding Path=X, Mode=TwoWay}" />
+                        <Setter Property="Canvas.Top" Value="{Binding Path=Y, Mode=TwoWay}" />
+                        <Setter Property="Panel.ZIndex" Value="{Binding Path=ZIndex, Mode=TwoWay}" />
+                        <Setter Property="ContentTemplate">
+                            <Setter.Value>
+                                <DataTemplate>
+                                    <Grid>
+                                        <ContentControl x:Name="ContentControl"
+                                                        Width="{Binding Width}" Height="{Binding Height}"
+                                                        utils:SizeObserver.Observe="True"
+                                                        utils:SizeObserver.ObservedHeight="{Binding ActualHeight, Mode=OneWayToSource}"
+                                                        utils:SizeObserver.ObservedWidth="{Binding ActualWidth, Mode=OneWayToSource}"
+                                                        Tag="{Binding DataContext, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                        ContextMenu="{StaticResource itemContextMenu}"
+                                                        PreviewMouseLeftButtonDown="item_PreviewMouseLeftButtonDown"
+                                                        PreviewMouseMove="item_PreviewMouseMove"
+                                                        PreviewMouseLeftButtonUp="item_PreviewMouseLeftButtonUp">
+                                            <ContentPresenter Content="{TemplateBinding ContentPresenter.Content}"/>
+                                        </ContentControl>
+                                        <Control x:Name="ResizeDecorator" Template="{StaticResource ResizeDecoratorTemplate}" Visibility="Collapsed"/>
+                                    </Grid>
+                                    <DataTemplate.Triggers>
+                                        <MultiDataTrigger>
+                                            <MultiDataTrigger.Conditions>
+                                                <Condition Binding="{Binding AutoSize}" Value="False" />
+                                                <Condition Value="True">
+                                                    <Condition.Binding>
+                                                        <MultiBinding Converter="{StaticResource referenceEqualsConverter}">
+                                                            <Binding RelativeSource="{RelativeSource AncestorType=ItemsControl}" Path="DataContext.SelectedElement" />
+                                                            <Binding />
+                                                        </MultiBinding>
+                                                    </Condition.Binding>
+                                                </Condition>
+                                            </MultiDataTrigger.Conditions>
+                                            <Setter TargetName="ResizeDecorator" Property="Visibility" Value="Visible"/>
+                                        </MultiDataTrigger>
+                                    </DataTemplate.Triggers>
+                                </DataTemplate>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+                </ItemsControl.ItemContainerStyle>
+            </ItemsControl>
+        </Grid>
+    </DockPanel>
 </mac:MetroWindow>

@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -19,23 +17,6 @@ namespace TouchRemote.Model.Persistence.Controls
     public sealed class RemoteSlider : RemoteElement
     {
         #region Dependency properties
-
-        private string _Label;
-        [Category("Appearance")]
-        [DisplayName("Label")]
-        [Description("Slider label")]
-        [XmlAttribute]
-        public string Label
-        {
-            get
-            {
-                return _Label;
-            }
-            set
-            {
-                ChangeAndNotify(ref _Label, value, () => Label);
-            }
-        }
 
         private Orientation _Orientation;
         [Category("Appearance")]
@@ -110,7 +91,6 @@ namespace TouchRemote.Model.Persistence.Controls
                 {
                     { "Value", NormalizedValue.ToString() },
                     { "Orientation", Orientation.ToString().ToLower() },
-                    { "Label", Label },
                 };
             }
         }
@@ -120,6 +100,9 @@ namespace TouchRemote.Model.Persistence.Controls
 
         [XmlIgnore]
         public override WebControl.WebControlType WebControlType => WebControl.WebControlType.Slider;
+
+        [XmlIgnore]
+        public override Dictionary<string, string> ControlStyle => new Dictionary<string, string> { };
 
         public override bool CanHandleEvent(string eventName)
         {

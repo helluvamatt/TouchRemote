@@ -92,17 +92,12 @@ namespace TouchRemote.Model.Persistence.Controls
 
         public static BuiltinIconSource Create(FontAwesomeIcon icon, Color color)
         {
-            return new BuiltinIconSource(icon.ToString(), ConvertColor(color));
-        }
-
-        private static string ConvertColor(Color color)
-        {
-            return string.Format("#{0:X2}{1:X2}{2:X2}{3:X2}", color.A, color.R, color.G, color.B);
+            return new BuiltinIconSource(icon.ToString(), color.ToHexString());
         }
 
         public void SetColor(Color color)
         {
-            Color = ConvertColor(color);
+            Color = color.ToHexString();
         }
 
         private void RedrawImage()
@@ -238,7 +233,11 @@ namespace TouchRemote.Model.Persistence.Controls
 
         public override int GetHashCode()
         {
-            return Source.GetHashCode();
+            if (Source != null)
+            {
+                return Source.GetHashCode();
+            }
+            return 0;
         }
     }
 

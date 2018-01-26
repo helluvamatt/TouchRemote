@@ -26,10 +26,11 @@ using Mono.Options;
 using System.Net.NetworkInformation;
 using TouchRemote.Model.Impl;
 using TouchRemote.Model.Persistence;
+using MahApps.Metro;
 
 namespace TouchRemote
 {
-    internal class AppContext : Application, IDisposable
+    internal partial class AppContext : Application, IDisposable
     {
         #region Private members
 
@@ -135,11 +136,14 @@ namespace TouchRemote
         {
             Logger.Info("Shutting down...");
             _WebServer.Dispose();
-            _TaskbarIcon.Dispose();
+            if (_TaskbarIcon != null) _TaskbarIcon.Dispose();
         }
 
         protected override void OnStartup(StartupEventArgs e)
         {
+            ThemeManager.AddAccent("TouchRemote", new Uri("pack://application:,,,/TouchRemote;component/UI/Theme.xaml"));
+            ThemeManager.ChangeAppStyle(this, ThemeManager.GetAccent("TouchRemote"), ThemeManager.GetAppTheme("BaseLight"));
+
             _TaskbarIcon = new TaskbarIcon();
             _TaskbarIcon.Icon = new SDIcon(GetType(), "appicon.ico");
             _TaskbarIcon.ToolTipText = R.AppTitle;
