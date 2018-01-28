@@ -12,7 +12,7 @@
     <title>Touch Remote</title>
 </head>
 <body>
-    <div id="app" class="container-fluid">
+    <div id="app" class="container-fluid" v-cloak>
         <router-view v-bind:auth-error="authError"></router-view>
         <div class="row shade" v-if="reconnecting">
             <div class="col-xs-12 col-sm-8 col-sm-offset-2 col-md-6 col-md-offset-3 col-lg-4 col-lg-offset-4">
@@ -41,7 +41,7 @@
             </div>
             <div class="controls" v-else-if="controlsDisplay.length">
                 <template v-for="control in controlsDisplay" >
-                    <component v-bind:is="control.Type" v-bind="control" @control-event="handleEvent(control.Id, ...arguments)"></component>
+                    <component v-bind:is="control.Type" v-bind="control" @control-event="handleEvent(control.Id, ...arguments)" @control-event-raw="handleRawEvent(control.Id, ...arguments)"></component>
                 </template>
             </div>
             <div class="col-xs-12 col-sm-8 col-sm-offset-2 col-md-6 col-md-offset-3 col-lg-4 col-lg-offset-4" v-else>
@@ -61,6 +61,16 @@
     </script>
     <script type="text/x-template" id="tpl_label">
         <div class="control control-label" v-bind:style="Styles">{{ Properties.Text }}</div>
+    </script>
+    <script type="text/x-template" id="tpl_touchpad">
+        <div class="control control-touchpad" v-bind:style="ctrlStyles">
+            <div class="touch-area" v-bind:style="touchAreaStyles" v-on:touchstart.prevent="handleDown($event)" v-on:touchend.prevent="resetDrag" v-on:touchcancel="resetDrag" v-on:touchmove.prevent="handleMove($event)" v-on:click="handleTap"></div>
+            <div class="button-area" v-bind:style="buttonAreaStyles">
+                <button v-on:click="handleLeftClick" v-bind:style="buttonStyles"></button>
+                <button v-on:click="handleMiddleClick" v-bind:style="buttonStyles" v-if="Properties.ShowMiddleMouseButton === 'True'"></button>
+                <button v-on:click="handleRightClick" v-bind:style="buttonStyles"></button>
+            </div>
+        </div>
     </script>
     <script type="text/x-template" id="tpl_login">
         <div class="col-xs-12 col-sm-8 col-sm-offset-2 col-md-6 col-md-offset-3 col-lg-4 col-lg-offset-4" style="text-align: center;">

@@ -127,7 +127,7 @@ namespace TouchRemote.Model.Persistence.Controls
         [DisplayName("Text Alignment")]
         [Description("Horizontal text alignment")]
         [XmlAttribute]
-        public TextAlignment TextAlignment
+        public virtual TextAlignment TextAlignment
         {
             get
             {
@@ -206,7 +206,7 @@ namespace TouchRemote.Model.Persistence.Controls
         [DisplayName("Font")]
         [Description("Label font")]
         [XmlElement("RemoteElement.Font")]
-        public Font Font
+        public virtual Font Font
         {
             get
             {
@@ -319,6 +319,10 @@ namespace TouchRemote.Model.Persistence.Controls
         [Browsable(false)]
         [XmlIgnore]
         public virtual IEnumerable<string> BoundPropertyNames => new string[0];
+
+        [Browsable(false)]
+        [XmlIgnore]
+        public virtual int MaxControlTypeCount => 0;
 
         #endregion
 

@@ -24,3 +24,50 @@ void SendKey(WORD wVirtualKey, BOOL bUp)
 	SendInput(1, &input, sizeof(INPUT));
 }
 
+void SendMouseMove(LONG dX, LONG dY)
+{
+	INPUT input;
+	input.type = INPUT_MOUSE;
+	input.mi.dwFlags = MOUSEEVENTF_MOVE;
+	input.mi.dx = dX;
+	input.mi.dy = dY;
+	input.mi.time = 0;
+	SendInput(1, &input, sizeof(INPUT));
+}
+
+void SendMouseScroll(DWORD wheelDelta)
+{
+	INPUT input;
+	input.type = INPUT_MOUSE;
+	input.mi.dwFlags = MOUSEEVENTF_WHEEL;
+	input.mi.mouseData = wheelDelta;
+	input.mi.time = 0;
+	SendInput(1, &input, sizeof(INPUT));
+}
+
+void SendMouse(DWORD flags)
+{
+	INPUT input;
+	input.type = INPUT_MOUSE;
+	input.mi.dwFlags = flags;
+	input.mi.time = 0;
+	SendInput(1, &input, sizeof(INPUT));
+}
+
+void SendMouseClickLeft()
+{
+	SendMouse(MOUSEEVENTF_LEFTDOWN);
+	SendMouse(MOUSEEVENTF_LEFTUP);
+}
+
+void SendMouseClickMiddle()
+{
+	SendMouse(MOUSEEVENTF_MIDDLEDOWN);
+	SendMouse(MOUSEEVENTF_MIDDLEUP);
+}
+
+void SendMouseClickRight()
+{
+	SendMouse(MOUSEEVENTF_RIGHTDOWN);
+	SendMouse(MOUSEEVENTF_RIGHTUP);
+}

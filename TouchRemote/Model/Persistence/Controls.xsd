@@ -10,8 +10,8 @@
   <xs:complexType name="Font">
     <xs:attribute name="Family" type="xs:string" use="optional" default="Segoe UI" />
     <xs:attribute name="Size" type="xs:int" use="optional" default="10" />
-    <xs:attribute name="Bold" type="xs:boolean" use="optional" />
-    <xs:attribute name="Italic" type="xs:boolean" use="optional" />
+    <xs:attribute name="Weight" type="xs:string" use="optional" default="Normal" />
+    <xs:attribute name="Style" type="xs:string" use="optional" default="Normal" />
   </xs:complexType>
   
   <xs:complexType name="ImplInstance">
@@ -92,6 +92,19 @@
         </xs:sequence>
         <xs:attribute name="Label" type="xs:string" use="required" />
         <xs:attribute name="Orientation" type="xs:int" use="required" />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="RemoteTouchPad">
+    <xs:complexContent>
+      <xs:extension base="RemoteElement">
+        <xs:attribute name="ClickTargetHeight" type="xs:int" use="required" />
+        <xs:attribute name="Sensitivity" type="xs:double" use="required" />
+        <xs:attribute name="ShowMiddleMouseButton" type="xs:boolean" use="required" />
+        <xs:attribute name="TapToClick" type="xs:boolean" use="required" />
+        <xs:attribute name="AllowScrolling" type="xs:boolean" use="required" />
+        <xs:attribute name="ReverseScrolling" type="xs:boolean" use="required" />
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>
@@ -204,6 +217,7 @@
         <xs:element name="LabelString" type="RemoteStringLabel" />
         <xs:element name="LabelBoolean" type="RemoteBooleanLabel" />
         <xs:element name="Label" type="RemoteLabel" />
+        <xs:element name="TouchPad" type="RemoteTouchPad" />
       </xs:choice>
     </xs:complexType>
   </xs:element>

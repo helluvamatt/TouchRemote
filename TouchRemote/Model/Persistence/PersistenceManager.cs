@@ -69,6 +69,7 @@ namespace TouchRemote.Model.Persistence
                     lockObj.EnterWriteLock();
                     try
                     {
+                        File.Copy(_XmlFilename, _XmlFilename + ".bak", true);
                         using (var stream = File.Create(_XmlFilename))
                         {
                             using (StreamWriter writer = new StreamWriter(stream))

@@ -61,6 +61,12 @@ namespace TouchRemote.Model.Impl
 
         public bool AddElement(RemoteElement element)
         {
+            if (element.MaxControlTypeCount > 0)
+            {
+                int existingCount = _ElementDict.Where(kvp => kvp.Value.GetType().Equals(element.GetType())).Count();
+                if (existingCount + 1 > element.MaxControlTypeCount) return false;
+            }
+
             if (_ElementDict.TryAdd(element.Id, element))
             {
                 element.PropertyChanged += Element_PropertyChanged;

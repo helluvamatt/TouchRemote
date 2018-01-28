@@ -1,4 +1,5 @@
 ﻿using MahApps.Metro.Controls;
+using MahApps.Metro.Controls.Dialogs;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -209,6 +210,8 @@ namespace TouchRemote.UI
 
         public ICommand AddStaticLabelCommand { get; private set; }
 
+        public ICommand AddTouchPadCommand { get; private set; }
+
         public ICommand OpenPropertiesCommand { get; private set; }
 
         public ICommand RemoveButtonCommand { get; private set; }
@@ -244,6 +247,7 @@ namespace TouchRemote.UI
             AddFloatLabelCommand = new DelegateCommand(AddFloatLabel);
             AddStringLabelCommand = new DelegateCommand(AddStringLabel);
             AddStaticLabelCommand = new DelegateCommand(AddStaticLabel);
+            AddTouchPadCommand = new DelegateCommand(AddTouchPad);
             OpenPropertiesCommand = new DelegateCommand<RemoteElement>(ShowButtonProperties);
             RemoveButtonCommand = new DelegateCommand<RemoteElement>(RemoveElement);
             ShutdownCommand = new DelegateCommand(shutdownCallback);
@@ -289,7 +293,7 @@ namespace TouchRemote.UI
         {
             var pt = contextMenuOpenedHere;
             if (pt == null) pt = new Point(0, 0);
-            RemoteControlService.AddElement(new RemoteButton {
+            AddElement(new RemoteButton {
                 Id = RemoteControlService.CreateId(),
                 Label = "New Button",
                 Icon = new IconHolder()
@@ -307,7 +311,7 @@ namespace TouchRemote.UI
         {
             var pt = contextMenuOpenedHere;
             if (pt == null) pt = new Point(0, 0);
-            RemoteControlService.AddElement(new RemoteToggleButton {
+            AddElement(new RemoteToggleButton {
                 Id = RemoteControlService.CreateId(),
                 LabelOff = "New Toggle Button",
                 LabelOn = "New Toggle Button",
@@ -331,7 +335,7 @@ namespace TouchRemote.UI
         {
             var pt = contextMenuOpenedHere;
             if (pt == null) pt = new Point(0, 0);
-            RemoteControlService.AddElement(new RemoteBoundToggleButton {
+            AddElement(new RemoteBoundToggleButton {
                 Id = RemoteControlService.CreateId(),
                 LabelOff = "New Bound Toggle Button",
                 LabelOn = "New Bound Toggle Button",
@@ -355,7 +359,7 @@ namespace TouchRemote.UI
         {
             var pt = contextMenuOpenedHere;
             if (pt == null) pt = new Point(0, 0);
-            RemoteControlService.AddElement(new RemoteSlider {
+            AddElement(new RemoteSlider {
                 Id = RemoteControlService.CreateId(),
                 X = pt.X,
                 Y = pt.Y,
@@ -367,7 +371,7 @@ namespace TouchRemote.UI
         {
             var pt = contextMenuOpenedHere;
             if (pt == null) pt = new Point(0, 0);
-            RemoteControlService.AddElement(new RemoteBooleanLabel
+            AddElement(new RemoteBooleanLabel
             {
                 Id = RemoteControlService.CreateId(),
                 FalseText = "New Label",
@@ -382,7 +386,7 @@ namespace TouchRemote.UI
         {
             var pt = contextMenuOpenedHere;
             if (pt == null) pt = new Point(0, 0);
-            RemoteControlService.AddElement(new RemoteFloatLabel
+            AddElement(new RemoteFloatLabel
             {
                 Id = RemoteControlService.CreateId(),
                 X = pt.X,
@@ -395,7 +399,7 @@ namespace TouchRemote.UI
         {
             var pt = contextMenuOpenedHere;
             if (pt == null) pt = new Point(0, 0);
-            RemoteControlService.AddElement(new RemoteStringLabel
+            AddElement(new RemoteStringLabel
             {
                 Id = RemoteControlService.CreateId(),
                 X = pt.X,
@@ -408,13 +412,34 @@ namespace TouchRemote.UI
         {
             var pt = contextMenuOpenedHere;
             if (pt == null) pt = new Point(0, 0);
-            RemoteControlService.AddElement(new RemoteLabel
+            AddElement(new RemoteLabel
             {
                 Id = RemoteControlService.CreateId(),
                 X = pt.X,
                 Y = pt.Y,
                 ZIndex = RemoteControlService.Count + 1
             });
+        }
+
+        private void AddTouchPad()
+        {
+            var pt = contextMenuOpenedHere;
+            if (pt == null) pt = new Point(0, 0);
+            AddElement(new RemoteTouchPad
+            {
+                Id = RemoteControlService.CreateId(),
+                X = pt.X,
+                Y = pt.Y,
+                ZIndex = RemoteControlService.Count + 1
+            });
+        }
+
+        private void AddElement(RemoteElement element)
+        {
+            if (!RemoteControlService.AddElement(element))
+            {
+                this.ShowMessageAsync("Cannot Add Control", string.Format("Only {0} {1} of this control is allowed at a time.", element.MaxControlTypeCount, element.MaxControlTypeCount == 1 ? "instance" : "instances"));
+            }
         }
 
         private void ShowButtonProperties(RemoteElement element)

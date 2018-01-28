@@ -196,6 +196,7 @@
     <Compile Include="Model\Persistence\Controls\RemoteStringLabel.cs" />
     <Compile Include="Model\Persistence\Controls\RemoteToggleButton.cs" />
     <Compile Include="Model\Persistence\Controls\RemoteToggleButtonBase.cs" />
+    <Compile Include="Model\Persistence\Controls\RemoteTouchPad.cs" />
     <Compile Include="Model\Persistence\Controls\StringBoundPropertyInstance.cs" />
     <Compile Include="Model\Persistence\Controls\BooleanBoundPropertyInstance.cs" />
     <Compile Include="Model\Persistence\Controls\FloatBoundPropertyInstance.cs" />

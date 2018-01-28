@@ -87,6 +87,97 @@ const LabelControl = Vue.component('Label', {
     props: ['Id', 'Type', 'Styles', 'Properties']
 });
 
+const TouchpadControl = Vue.component('TouchPad', {
+    template: '#tpl_touchpad',
+    props: ['Id', 'Type', 'Styles', 'Properties'],
+    data: function () {
+        return {
+            isPressed: false,
+            lastX: 0,
+            lastY: 0,
+        };
+    },
+    computed: {
+        ctrlStyles: function () {
+            return $.extend({}, this.Styles, {
+                'border-color': this.Styles.color,
+            });
+        },
+        touchAreaStyles: function () {
+            var style = {
+                'border-color': this.Styles.color
+            };
+            if (this.Styles.width === 'auto' && this.Styles.height === 'auto') {
+                style['width'] = 'auto';
+                style['height'] = 'auto';
+            }
+            return style;
+        },
+        buttonAreaStyles: function () {
+            return {
+                'height': this.Properties.ClickTargetHeight + 'px'
+            };
+        },
+        buttonStyles: function () {
+            return {
+                'border-color': this.Styles.color
+            }
+        }
+    },
+    methods: {
+        handleTap: function () {
+            if (this.Properties.TapToClick === 'True') {
+                this.$emit('control-event', 'mouse-click-left');
+            }
+        },
+        handleLeftClick: function () {
+            this.$emit('control-event', 'mouse-click-left');
+        },
+        handleMiddleClick: function () {
+            this.$emit('control-event', 'mouse-click-middle');
+        },
+        handleRightClick: function () {
+            this.$emit('control-event', 'mouse-click-right');
+        },
+        handleDown: function (event) {
+            this.isPressed = true;
+            if (event.targetTouches.length >= 2 && this.Properties.AllowScrolling === 'True') {
+                var y = 0;
+                for (var i = 0; i < event.targetTouches.length; i++) {
+                    y += event.targetTouches[i].clientY;
+                }
+                this.lastY = y / event.targetTouches.length;
+            } else {
+                this.lastX = event.targetTouches[0].clientX;
+                this.lastY = event.targetTouches[0].clientY;
+            }
+        },
+        handleMove: throttle(function (event) {
+            if (this.isPressed) {
+                if (event.targetTouches.length >= 2 && this.Properties.AllowScrolling === 'True') {
+                    var y = 0;
+                    for (var i = 0; i < event.targetTouches.length; i++) {
+                        y += event.targetTouches[i].clientY;
+                    }
+                    y = y / event.targetTouches.length;
+                    var dY = y - this.lastY;
+                    this.$emit('control-event-raw', 'mouse-scroll', Math.round(dY));
+                    this.lastY = y;
+                } else {
+                    var dX = event.targetTouches[0].clientX - this.lastX;
+                    var dY = event.targetTouches[0].clientY - this.lastY;
+                    this.$emit('control-event-raw', 'mouse-move', { dX: dX, dY: dY });
+                    this.lastX = event.targetTouches[0].clientX;
+                    this.lastY = event.targetTouches[0].clientY;
+                }
+            }
+        }, 25),
+        resetDrag: function () {
+            this.isPressed = false;
+        }
+    }
+});
+
 const Controls = Vue.component('controls', {
     template: '#tpl_controls',
     data: function () {
@@ -122,6 +213,9 @@ const Controls = Vue.component('controls', {
     methods: {
         handleEvent: function (id, eventName, eventData) {
             EventBus.$emit('control-event', id, eventName, eventData);
+        },
+        handleRawEvent: function (id, eventName, eventData) {
+            EventBus.$emit('control-event-raw', id, eventName, eventData);
         },
         loadControls: function () {
             this.loaded = false;
@@ -262,8 +356,7 @@ var vm = new Vue({
             }
         });
 
-        // Event from Controls module: control event fired to be sent to server, rate limited to 10 Hz
-        var sendControlEvent = throttle(function (id, name, data) {
+        var sendControlEvent = function (id, name, data) {
             if ($vm.hubConnected) {
                 remoteHub.server.processEvent($vm.token, id, name, data).done(function (result) {
                     if (result.AuthState == AuthState.Authenticated) {
@@ -279,8 +372,12 @@ var vm = new Vue({
                     }
                 });
             }
-        }, 50);
-        EventBus.$on('control-event', sendControlEvent);
+        };
+
+        // Event from Controls module: control event fired to be sent to server, rate limited to 20 Hz
+        var sendControlEventThrottled = throttle(sendControlEvent, 50);
+        EventBus.$on('control-event', sendControlEventThrottled);
+        EventBus.$on('control-event-raw', sendControlEvent);
 
         //void UpdateControl(WebButton webButton);
         remoteHub.client.updateControl = function (button) {

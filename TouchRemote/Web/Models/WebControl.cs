@@ -30,6 +30,7 @@ namespace TouchRemote.Web.Models
             Button = 1,
             Slider = 2,
             Label = 3,
+            TouchPad = 4,
         }
     }
 }

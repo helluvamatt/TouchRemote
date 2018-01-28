@@ -18,6 +18,7 @@ namespace TouchRemote.Model.Persistence.Controls
         [XmlElement("LabelFloat", typeof(RemoteFloatLabel))]
         [XmlElement("LabelString", typeof(RemoteStringLabel))]
         [XmlElement("Label", typeof(RemoteLabel))]
+        [XmlElement("TouchPad", typeof(RemoteTouchPad))]
         public RemoteElement[] Items
         {
             get
