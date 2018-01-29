@@ -133,15 +133,6 @@ namespace TouchRemote.Model.Impl
             }
         }
 
-        public WebControl GetControl(Guid guid)
-        {
-            if (_ElementDict.ContainsKey(guid))
-            {
-                return _ElementDict[guid].ToWebControl();
-            }
-            return null;
-        }
-
         #endregion
 
         #region Private methods

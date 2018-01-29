@@ -12,7 +12,5 @@ namespace TouchRemote.Model
         bool ProcessEvent(Guid guid, string eventName, object eventData);
 
         IEnumerable<WebControl> ControlList { get; }
-
-        WebControl GetControl(Guid guid);
     }
 }

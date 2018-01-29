@@ -30,7 +30,7 @@ namespace TouchRemote.Model.Persistence.Controls
             }
             set
             {
-                ChangeAndNotify(ref _Text, value, () => Text);
+                ChangeAndNotify(ref _Text, value, () => Text, (oldValue, newValue) => RenderedText = RenderText(newValue));
             }
         }
 
@@ -48,6 +48,21 @@ namespace TouchRemote.Model.Persistence.Controls
             set
             {
                 ChangeAndNotify(ref _WrapContents, value, () => WrapContents);
+            }
+        }
+
+        private byte[] _RenderedText;
+        [Browsable(false)]
+        [XmlIgnore]
+        public byte[] RenderedText
+        {
+            get
+            {
+                return _RenderedText;
+            }
+            set
+            {
+                ChangeAndNotify(ref _RenderedText, value, () => RenderedText);
             }
         }
 
@@ -82,21 +97,12 @@ namespace TouchRemote.Model.Persistence.Controls
         [XmlIgnore]
         public override Dictionary<string, string> WebProperties => new Dictionary<string, string>
         {
-            { "Text", Text }
+            { "Text", Text },
+            { "RenderedText", "data:image/png;base64," + Convert.ToBase64String(RenderedText) }
         };
 
         [XmlIgnore]
         public override WebControl.WebControlType WebControlType => WebControl.WebControlType.Label;
-
-        public override bool CanHandleEvent(string eventName)
-        {
-            return false;
-        }
-
-        public override void ProcessEvent(string eventName, object eventData)
-        {
-            // No-op
-        }
 
         #endregion
     }

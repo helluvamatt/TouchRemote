@@ -15,6 +15,7 @@ namespace TouchRemote.Model.Persistence.Controls
     {
         private static readonly FontStyleConverter fontStyleConverter = new FontStyleConverter();
         private static readonly FontWeightConverter fontWeightConverter = new FontWeightConverter();
+        private static readonly FontStretchConverter fontStretchConverter = new FontStretchConverter();
 
         public Font()
         {
@@ -22,6 +23,7 @@ namespace TouchRemote.Model.Persistence.Controls
             _Size = 10;
             _Weight = FontWeights.Normal;
             _Style = FontStyles.Normal;
+            _Stretch = FontStretches.Normal;
         }
 
         private FontFamily _Family;
@@ -80,6 +82,20 @@ namespace TouchRemote.Model.Persistence.Controls
             }
         }
 
+        private FontStretch _Stretch;
+        [XmlIgnore]
+        public FontStretch Stretch
+        {
+            get
+            {
+                return _Stretch;
+            }
+            set
+            {
+                PropertyChanged.ChangeAndNotify(ref _Stretch, value, () => Stretch);
+            }
+        }
+
         [XmlAttribute("Family")]
         public string FamilyStr
         {
@@ -119,12 +135,25 @@ namespace TouchRemote.Model.Persistence.Controls
             }
         }
 
+        [XmlAttribute("Stretch")]
+        public string StretchStr
+        {
+            get
+            {
+                return fontStretchConverter.ConvertToString(Stretch);
+            }
+            set
+            {
+                Stretch = (FontStretch)fontStretchConverter.ConvertFromString(value);
+            }
+        }
+
         [XmlIgnore]
         public bool IsDefault
         {
             get
             {
-                return Family.Source == "Segoe UI" && Size == 10 && Weight == FontWeights.Normal && Style == FontStyles.Normal;
+                return Family.Source == "Segoe UI" && Size == 10 && Weight == FontWeights.Normal && Style == FontStyles.Normal && Stretch == FontStretches.Normal;
             }
         }
 
@@ -134,8 +163,9 @@ namespace TouchRemote.Model.Persistence.Controls
         {
             var str = new StringBuilder();
             str.AppendFormat("{0}, {1}", Family, Size);
-            if (Weight == FontWeights.Normal) str.AppendFormat(", {0}", WeightStr);
-            if (Style == FontStyles.Normal) str.AppendFormat(", {0}", StyleStr);
+            if (Weight != FontWeights.Normal) str.AppendFormat(", {0}", WeightStr);
+            if (Style != FontStyles.Normal) str.AppendFormat(", {0}", StyleStr);
+            if (Stretch != FontStretches.Normal) str.AppendFormat(", {0}", StretchStr);
             return str.ToString();
         }
     }

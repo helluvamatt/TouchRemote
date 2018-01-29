@@ -80,7 +80,7 @@ namespace TouchRemote
 
         private ILog _Log;
 
-        private RemoteControlService _RemoteControlService;
+        private IRemoteControlService _RemoteControlService;
 
         private CancellationTokenSource _CancellationTokenSource;
 
@@ -92,7 +92,7 @@ namespace TouchRemote
 
         public event PropertyChangedEventHandler PropertyChanged;
 
-        public WebServer(RemoteControlService service, IPEndPoint[] listenAddresses)
+        public WebServer(IRemoteControlService service, IPEndPoint[] listenAddresses)
         {
             Status = ServerStatus.Starting;
             _Log = LogManager.GetLogger(GetType());

@@ -57,10 +57,10 @@
         </div>
     </script>
     <script type="text/x-template" id="tpl_button">
-        <button type="button" class="btn btn-default control control-button" v-bind:style="realStyles" @click.stop="emitClicked" @mouseover.stop="isMouseOver = true" @mouseout.stop="isMouseOver = false"><div class="icn" v-if="Properties.IconData != ''"><img v-bind:src="Properties.IconData" alt="icon" /></div><div class="lbl">{{ Properties.Label }}</div></button>
+        <button type="button" class="btn btn-default control control-button" v-bind:style="realStyles" @click.stop="emitClicked" @mouseover.stop="isMouseOver = true" @mouseout.stop="isMouseOver = false"><div class="icn" v-if="Properties.IconData != ''"><img v-bind:src="Properties.IconData" alt="icon" /></div><div class="lbl"><img v-bind:src="Properties.RenderedLabel" v-bind:alt="Properties.Label" /></div></button>
     </script>
     <script type="text/x-template" id="tpl_label">
-        <div class="control control-label" v-bind:style="Styles">{{ Properties.Text }}</div>
+        <div class="control control-label" v-bind:style="Styles"><img v-bind:src="Properties.RenderedText" v-bind:alt="Properties.Text" /></div>
     </script>
     <script type="text/x-template" id="tpl_touchpad">
         <div class="control control-touchpad" v-bind:style="ctrlStyles">

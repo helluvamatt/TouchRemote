@@ -133,6 +133,7 @@ namespace TouchRemote.Web.Hubs
     public interface IClient
     {
         void UpdateControl(WebControl webButton);
+        void UpdateControlProperty(string id, string propertyName, string propertyValue);
         void RefreshControls();
     }
 }

@@ -418,6 +418,5 @@
   <ItemGroup>
     <EmbeddedResource Include="Web\Assets\js\lodash.throttle.js" />
   </ItemGroup>
-  <ItemGroup />
   <Import Project="..\packages\NETStandard.Library.2.0.1\build\netstandard2.0\NETStandard.Library.targets" Condition="Exists('..\packages\NETStandard.Library.2.0.1\build\netstandard2.0\NETStandard.Library.targets')" />
 </Project>

@@ -31,10 +31,6 @@ namespace TouchRemote.Utils
                 { "backgroundColor", e.BackgroundColor.ToCssString() },
                 { "textAlign", e.TextAlignment.ToString().ToLower() },
                 { "justifyContent", e.TextAlignment.ToCssFlexbox() },
-                { "fontFamily", e.Font.FamilyStr },
-                { "fontSize", string.Format("{0}px", e.Font.Size) },
-                { "fontWeight", e.Font.WeightStr },
-                { "fontStyle", e.Font.StyleStr }
             };
             foreach (var kvp in e.ControlStyle)
             {

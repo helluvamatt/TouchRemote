@@ -4,14 +4,14 @@
     elementFormDefault="qualified"
     xmlns="http://schneenet.com/Controls.xsd"
     xmlns:mstns="http://schneenet.com/Controls.xsd"
-    xmlns:xs="http://www.w3.org/2001/XMLSchema"
->
+    xmlns:xs="http://www.w3.org/2001/XMLSchema">
 
   <xs:complexType name="Font">
     <xs:attribute name="Family" type="xs:string" use="optional" default="Segoe UI" />
     <xs:attribute name="Size" type="xs:int" use="optional" default="10" />
     <xs:attribute name="Weight" type="xs:string" use="optional" default="Normal" />
     <xs:attribute name="Style" type="xs:string" use="optional" default="Normal" />
+    <xs:attribute name="Stretch" type="xs:string" use="optional" default="Normal" />
   </xs:complexType>
   
   <xs:complexType name="ImplInstance">

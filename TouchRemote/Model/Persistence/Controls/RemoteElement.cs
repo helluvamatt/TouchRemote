@@ -9,6 +9,9 @@ using System.Xml.Serialization;
 using System.Xml;
 using System.Windows;
 using System.Windows.Media;
+using System.Windows.Media.Imaging;
+using System.IO;
+using System.Windows.Controls;
 
 namespace TouchRemote.Model.Persistence.Controls
 {
@@ -87,10 +90,9 @@ namespace TouchRemote.Model.Persistence.Controls
         }
 
         private double _Width;
-        //[Category("Appearance")]
-        //[DisplayName("Width")]
-        //[Description("Control width, ignored if AutoSize is true")]
-        [Browsable(false)]
+        [Category("Appearance")]
+        [DisplayName("Width")]
+        [Description("Control width, ignored if AutoSize is true")]
         [XmlIgnore]
         public double Width
         {
@@ -105,10 +107,9 @@ namespace TouchRemote.Model.Persistence.Controls
         }
 
         private double _Height;
-        //[Category("Appearance")]
-        //[DisplayName("Height")]
-        //[Description("Control height, ignored if AutoSize is true")]
-        [Browsable(false)]
+        [Category("Appearance")]
+        [DisplayName("Height")]
+        [Description("Control height, ignored if AutoSize is true")]
         [XmlIgnore]
         public double Height
         {
@@ -296,10 +297,6 @@ namespace TouchRemote.Model.Persistence.Controls
         [XmlIgnore]
         public abstract WebControl.WebControlType WebControlType { get; }
 
-        public abstract bool CanHandleEvent(string eventName);
-
-        public abstract void ProcessEvent(string eventName, object eventData);
-
         internal abstract InflateResult Inflate(PluginManager pluginManager);
 
         internal abstract void Deflate(XmlDocument document);
@@ -312,9 +309,13 @@ namespace TouchRemote.Model.Persistence.Controls
         public virtual void OnBooleanBoundPropertyValueChanged(string propertyName, bool newValue) { }
         public virtual void OnStringBoundPropertyValueChanged(string propertyName, string newValue) { }
 
-        public virtual FloatBoundProperty GetFloatBoundProperty(string propertyName) { return null; }
-        public virtual BooleanBoundProperty GetBooleanBoundProperty(string propertyName) { return null; }
-        public virtual StringBoundProperty GetStringBoundProperty(string propertyName) { return null; }
+        public virtual FloatBoundProperty GetFloatBoundProperty(string propertyName) => null;
+        public virtual BooleanBoundProperty GetBooleanBoundProperty(string propertyName) => null;
+        public virtual StringBoundProperty GetStringBoundProperty(string propertyName) => null;
+
+        public virtual bool CanHandleEvent(string eventName) => false;
+
+        public virtual void ProcessEvent(string eventName, object eventData) { }
 
         [Browsable(false)]
         [XmlIgnore]
@@ -339,6 +340,42 @@ namespace TouchRemote.Model.Persistence.Controls
         protected void Notify<T>(Expression<Func<T>> memberExpression)
         {
             PropertyChanged.Notify(memberExpression);
+        }
+
+        protected byte[] RenderText(string text)
+        {
+            if (!Application.Current.Dispatcher.HasShutdownStarted)
+            {
+                return Application.Current.Dispatcher.Invoke(() =>
+                {
+                    TextBlock textBlock = new TextBlock();
+                    textBlock.BeginInit();
+                    textBlock.Text = text;
+                    textBlock.Width = double.IsNaN(Width) ? Width : Width - 10;
+                    textBlock.TextAlignment = TextAlignment;
+                    textBlock.TextWrapping = AutoSize ? TextWrapping.NoWrap : TextWrapping.Wrap;
+                    textBlock.TextTrimming = TextTrimming.CharacterEllipsis;
+                    textBlock.FontFamily = Font.Family;
+                    textBlock.FontSize = Font.Size;
+                    textBlock.FontWeight = Font.Weight;
+                    textBlock.FontStyle = Font.Style;
+                    textBlock.FontStretch = Font.Stretch;
+                    textBlock.EndInit();
+                    textBlock.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+                    textBlock.Arrange(new Rect(textBlock.DesiredSize));
+                    textBlock.UpdateLayout();
+                    RenderTargetBitmap bmp = new RenderTargetBitmap(Convert.ToInt32(Math.Ceiling(textBlock.ActualWidth)), Convert.ToInt32(Math.Ceiling(textBlock.ActualHeight)), 96, 96, PixelFormats.Pbgra32);
+                    bmp.Render(textBlock);
+                    var encoder = new PngBitmapEncoder();
+                    encoder.Frames.Add(BitmapFrame.Create(bmp));
+                    using (var stream = new MemoryStream())
+                    {
+                        encoder.Save(stream);
+                        return stream.ToArray();
+                    }
+                });
+            }
+            return new byte[0];
         }
 
         public override string ToString()

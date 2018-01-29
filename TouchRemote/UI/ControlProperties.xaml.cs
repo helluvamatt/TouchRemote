@@ -11,8 +11,8 @@ using TouchRemote.Model.Persistence.Controls;
 using TouchRemote.UI.ConfigEditor;
 using TouchRemote.UI.IconPicker;
 using TouchRemote.Utils;
-using WpfColorFontDialog;
 using System.Windows.Media;
+using WpfColorFontDialog;
 
 namespace TouchRemote.UI
 {
@@ -59,7 +59,7 @@ namespace TouchRemote.UI
         private void OpenFontPicker(Font font)
         {
             ColorFontDialog fd = new ColorFontDialog(true, true, false);
-            FontInfo fontInfo = new FontInfo(font.Family, font.Size, font.Style, FontStretches.Normal, font.Weight, Brushes.Black);
+            FontInfo fontInfo = new FontInfo(font.Family, font.Size, font.Style, font.Stretch, font.Weight, Brushes.Black);
             fd.Font = fontInfo;
             var result = fd.ShowDialog();
             if (result.HasValue && result.Value)
@@ -68,6 +68,7 @@ namespace TouchRemote.UI
                 font.Size = fd.Font.Size;
                 font.Style = fd.Font.Style;
                 font.Weight = fd.Font.Weight;
+                font.Stretch = fd.Font.Stretch;
             }
         }
     }

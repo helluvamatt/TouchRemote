@@ -198,6 +198,9 @@ const Controls = Vue.component('controls', {
         EventBus.$on('control-updated', function (control) {
             $this.controls[control.Id] = control;
         });
+        EventBus.$on('control-updated-property', function (id, propertyName, propertyValue) {
+            $this.controls[id][propertyName] = propertyValue;
+        });
         EventBus.$on('controls-changed', function (data) {
             var controlsDict = {};
             $.each(data, function (index, item) {
@@ -387,6 +390,11 @@ var vm = new Vue({
         //void RefreshControls();
         remoteHub.client.refreshControls = function () {
             getControls();
+        };
+
+        //void UpdateControlProperty(string id, string propertyName, string propertyValue);
+        remoteHub.client.updateControlProperty = function (id, propertyName, propertyValue) {
+            EventBus.$emit('control-update-property', id, propertyName, propertyValue);
         };
 
         $.connection.hub.start().done(function () {

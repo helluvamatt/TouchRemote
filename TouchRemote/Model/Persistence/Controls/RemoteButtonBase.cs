@@ -44,7 +44,22 @@ namespace TouchRemote.Model.Persistence.Controls
             }
             set
             {
-                ChangeAndNotify(ref _Label, value, () => Label);
+                ChangeAndNotify(ref _Label, value, () => Label, (oldValue, newValue) => RenderedLabel = RenderText(newValue));
+            }
+        }
+
+        private byte[] _RenderedLabel;
+        [Browsable(false)]
+        [XmlIgnore]
+        public byte[] RenderedLabel
+        {
+            get
+            {
+                return _RenderedLabel;
+            }
+            set
+            {
+                ChangeAndNotify(ref _RenderedLabel, value, () => RenderedLabel);
             }
         }
 
@@ -172,6 +187,7 @@ namespace TouchRemote.Model.Persistence.Controls
         public override Dictionary<string, string> WebProperties => new Dictionary<string, string>()
         {
             { "Label", Label },
+            { "RenderedLabel", "data:image/png;base64," + Convert.ToBase64String(RenderedLabel) },
             { "ActiveColor", ActiveColor.ToCssString() },
             { "ActiveBackgroundColor", ActiveBackgroundColor.ToCssString() },
             { "IconData", Icon.Source != null ? "data:image/png;base64," + Convert.ToBase64String(Icon.Source.PngBytes) : "" },

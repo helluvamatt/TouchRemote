@@ -19,11 +19,6 @@ input::-moz-focus-inner {
 	padding: 5px;
 }
 
-.controls .control-button .lbl,
-.controls .control-button .icn {
-	padding: 5px 0;
-}
-
 .controls .control-button img.button-image {
 	height: 48px;
 	width: 48px;
