@@ -223,6 +223,7 @@
       <DependentUpon>ControlProperties.xaml</DependentUpon>
     </Compile>
     <Compile Include="UI\Controls\ResizeThumb.cs" />
+    <Compile Include="UI\Controls\SimpleSlider.cs" />
     <Compile Include="UI\IconPicker\PickerWindow.xaml.cs">
       <DependentUpon>PickerWindow.xaml</DependentUpon>
     </Compile>

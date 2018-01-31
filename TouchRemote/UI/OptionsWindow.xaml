@@ -547,6 +547,7 @@
                     </ContextMenu>
                 </ItemsControl.ContextMenu>
                 <ItemsControl.Resources>
+                    
                     <ContextMenu x:Key="itemContextMenu">
                         <ContextMenu.Resources>
                             <Style TargetType="fa:ImageAwesome">
@@ -752,39 +753,11 @@
                             <Border.Background>
                                 <SolidColorBrush Color="{Binding BackgroundColor}" />
                             </Border.Background>
-                            <Slider Minimum="0.0" Maximum="1.0" Value="{Binding NormalizedValue}">
-                                <Slider.Style>
-                                    <Style TargetType="Slider" BasedOn="{StaticResource MetroSlider}">
-                                        <Setter Property="Orientation" Value="{Binding Orientation}" />
-                                        <Setter Property="HorizontalAlignment" Value="Stretch" />
-                                        <Setter Property="VerticalAlignment" Value="Center" />
-                                        <Setter Property="MinWidth" Value="0" />
-                                        <Setter Property="MinHeight" Value="0" />
-                                        <Style.Triggers>
-                                            <DataTrigger Binding="{Binding Orientation}" Value="Vertical">
-                                                <Setter Property="HorizontalAlignment" Value="Center" />
-                                                <Setter Property="VerticalAlignment" Value="Stretch" />
-                                            </DataTrigger>
-                                            <MultiDataTrigger>
-                                                <MultiDataTrigger.Conditions>
-                                                    <Condition Binding="{Binding Orientation}" Value="Vertical" />
-                                                    <Condition Binding="{Binding AutoSize}" Value="True" />
-                                                </MultiDataTrigger.Conditions>
-                                                <Setter Property="MinWidth" Value="0" />
-                                                <Setter Property="MinHeight" Value="200" />
-                                            </MultiDataTrigger>
-                                            <MultiDataTrigger>
-                                                <MultiDataTrigger.Conditions>
-                                                    <Condition Binding="{Binding Orientation}" Value="Horizontal" />
-                                                    <Condition Binding="{Binding AutoSize}" Value="True" />
-                                                </MultiDataTrigger.Conditions>
-                                                <Setter Property="MinWidth" Value="200" />
-                                                <Setter Property="MinHeight" Value="0" />
-                                            </MultiDataTrigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </Slider.Style>
-                            </Slider>
+                            <ui:SimpleSlider Value="{Binding NormalizedValue}" Orientation="{Binding Orientation}">
+                                <ui:SimpleSlider.Foreground>
+                                    <SolidColorBrush Color="{Binding Color}" />
+                                </ui:SimpleSlider.Foreground>
+                            </ui:SimpleSlider>
                         </Border>
                     </DataTemplate>
                     <DataTemplate DataType="{x:Type controls:RemoteLabelBase}">

@@ -46,37 +46,54 @@ const SliderControl = Vue.component('Slider', {
     template: '#tpl_slider',
     props: ['Id', 'Type', 'Styles', 'Properties'],
     data: function () {
-        return {};
+        return {
+            isPressed: false
+        };
     },
     computed: {
-        wrapperStyles: function () {
-            if (this.Styles.width !== 'auto' && this.Styles.height !== 'auto') {
-                if (this.Properties.Orientation === 'vertical') {
-                    var height = Number.parseFloat(this.Styles.height) - 10;
-                    return { 'height': height + 'px' };
-                } else {
-                    var width = Number.parseFloat(this.Styles.width) - 10;
-                    return { 'width': width + 'px' };
-                }
+        fillStyles: function () {
+            var styles = {
+                backgroundColor: this.Styles.color
+            };
+            var percent = Number.parseFloat(this.Properties.Value) * 100;
+            if (this.Properties.Orientation === 'vertical') {
+                styles.height = percent + '%';
+            } else {
+                styles.width = percent + '%';
             }
-            return {};
-        },
-        inputRangeStyles: function () {
-            if (this.Styles.width !== 'auto' && this.Styles.height !== 'auto') {
-                var length = Number.parseFloat(this.Properties.Orientation === 'vertical' ? this.Styles.height : this.Styles.width) - 10;
-                var styles = { 'width': length + 'px' };
-                if (this.Properties.Orientation === 'vertical') {
-                    var half = length / 2;
-                    styles['transformOrigin'] = half + 'px ' + half + 'px';
-                }
-                return styles;
-            }
-            return {};
+            return styles;
         }
     },
     methods: {
-        valueChanged: function (e) {
-            var value = Number.parseFloat(e.target.value);
+        handleDown: function (event) {
+            this.isPressed = true;
+            this.setValueFromTouch(event);
+        },
+        handleMove: throttle(function (event) {
+            if (this.isPressed) {
+                this.setValueFromTouch(event);
+            }
+        }, 25),
+        handleUp: function (event) {
+            this.setValueFromTouch(event);
+            this.isPressed = false;
+        },
+        setValueFromTouch: function (event) {
+            var $wrapper = $(event.currentTarget);
+            var value;
+            if (this.Properties.Orientation === 'vertical') {
+                var wrapperTop = $wrapper.offset().top;
+                var wrapperHeight = $wrapper.height();
+                var targetTop = event.targetTouches[0].pageY;
+                value = 1 - ((targetTop - wrapperTop) / wrapperHeight);
+            } else {
+                var wrapperLeft = $wrapper.offset().left;
+                var wrapperWidth = $wrapper.width();
+                var targetLeft = event.targetTouches[0].pageX;
+                value = ((targetLeft - wrapperLeft) / wrapperWidth);
+            }
+            if (value > 1) value = 1;
+            if (value < 0) value = 0;
             this.$emit('control-event', 'value-changed', value);
         }
     }
@@ -95,6 +112,9 @@ const TouchpadControl = Vue.component('TouchPad', {
             isPressed: false,
             lastX: 0,
             lastY: 0,
+            pressStart: 0,
+            startX: 0,
+            startY: 0
         };
     },
     computed: {
@@ -125,11 +145,6 @@ const TouchpadControl = Vue.component('TouchPad', {
         }
     },
     methods: {
-        handleTap: function () {
-            if (this.Properties.TapToClick === 'True') {
-                this.$emit('control-event', 'mouse-click-left');
-            }
-        },
         handleLeftClick: function () {
             this.$emit('control-event', 'mouse-click-left');
         },
@@ -141,27 +156,35 @@ const TouchpadControl = Vue.component('TouchPad', {
         },
         handleDown: function (event) {
             this.isPressed = true;
+            this.pressStart = Date.now();
             if (event.targetTouches.length >= 2 && this.Properties.AllowScrolling === 'True') {
-                var y = 0;
+                var x = 0, y = 0;
                 for (var i = 0; i < event.targetTouches.length; i++) {
+                    x += event.targetTouches[i].clientX;
                     y += event.targetTouches[i].clientY;
                 }
+                this.lastX = x / event.targetTouches.length;
                 this.lastY = y / event.targetTouches.length;
             } else {
                 this.lastX = event.targetTouches[0].clientX;
                 this.lastY = event.targetTouches[0].clientY;
             }
+            this.startX = this.lastX;
+            this.startY = this.lastY;
         },
         handleMove: throttle(function (event) {
             if (this.isPressed) {
                 if (event.targetTouches.length >= 2 && this.Properties.AllowScrolling === 'True') {
-                    var y = 0;
+                    var x = 0, y = 0;
                     for (var i = 0; i < event.targetTouches.length; i++) {
+                        x += event.targetTouches[i].clientX;
                         y += event.targetTouches[i].clientY;
                     }
+                    x = x / event.targetTouches.length;
                     y = y / event.targetTouches.length;
                     var dY = y - this.lastY;
                     this.$emit('control-event-raw', 'mouse-scroll', Math.round(dY));
+                    this.lastX = x;
                     this.lastY = y;
                 } else {
                     var dX = event.targetTouches[0].clientX - this.lastX;
@@ -172,8 +195,19 @@ const TouchpadControl = Vue.component('TouchPad', {
                 }
             }
         }, 25),
+        handleUp: function (event) {
+            if (this.Properties.TapToClick === 'True' && this.isPressed && event.targetTouches.length == 1 && this.pressStart > 0 && (Date.now() - this.pressStart) < 500) {
+                var dX = event.targetTouches[0].clientX - this.startX;
+                var dY = event.targetTouches[0].clientY - this.startX;
+                if (dX < 20 && dY < 20) {
+                    this.$emit('control-event', 'mouse-click-left');
+                }
+            }
+            this.resetDrag();
+        },
         resetDrag: function () {
             this.isPressed = false;
+            this.pressStart = 0;
         }
     }
 });

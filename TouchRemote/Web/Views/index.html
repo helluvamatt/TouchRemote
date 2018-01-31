@@ -51,8 +51,8 @@
     </script>
     <script type="text/x-template" id="tpl_slider">
         <div v-bind:class="['control', 'control-slider', Properties.Orientation]" v-bind:style="Styles">
-            <div class="slider-wrapper" v-bind:style="wrapperStyles">
-                <input type="range" min="0" max="1" step="0.01" v-bind:value="Properties.Value" v-on:input="valueChanged" v-bind:style="inputRangeStyles" />
+            <div class="slider-wrapper" v-on:touchstart.prevent="handleDown($event)" v-on:touchmove.prevent="handleMove($event)" v-on:touchend.prevent="handleUp($event)">
+                <div class="slider-fill" v-bind:style="fillStyles"></div>
             </div>
         </div>
     </script>
@@ -64,7 +64,7 @@
     </script>
     <script type="text/x-template" id="tpl_touchpad">
         <div class="control control-touchpad" v-bind:style="ctrlStyles">
-            <div class="touch-area" v-bind:style="touchAreaStyles" v-on:touchstart.prevent="handleDown($event)" v-on:touchend.prevent="resetDrag" v-on:touchcancel="resetDrag" v-on:touchmove.prevent="handleMove($event)" v-on:click="handleTap"></div>
+            <div class="touch-area" v-bind:style="touchAreaStyles" v-on:touchstart.prevent="handleDown($event)" v-on:touchmove.prevent="handleMove($event)" v-on:touchend.prevent="handleUp($event)" v-on:touchcancel="resetDrag"></div>
             <div class="button-area" v-bind:style="buttonAreaStyles">
                 <button v-on:click="handleLeftClick" v-bind:style="buttonStyles"></button>
                 <button v-on:click="handleMiddleClick" v-bind:style="buttonStyles" v-if="Properties.ShowMiddleMouseButton === 'True'"></button>
